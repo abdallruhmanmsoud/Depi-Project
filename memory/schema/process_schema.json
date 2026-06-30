@@ -1,0 +1,53 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Process Schema",
+  "description": "Schema for normalized Volatility pslist output. Each object represents a single process found in memory.",
+  "type": "object",
+  "properties": {
+    "pid": {
+      "type": "integer",
+      "description": "Process ID"
+    },
+    "ppid": {
+      "type": "integer",
+      "description": "Parent Process ID"
+    },
+    "image_file_name": {
+      "type": "string",
+      "description": "Name of the process executable"
+    },
+    "offset": {
+      "type": "string",
+      "description": "Virtual or physical offset in memory"
+    },
+    "threads": {
+      "type": "integer",
+      "description": "Number of threads"
+    },
+    "handles": {
+      "type": "integer",
+      "description": "Number of handles"
+    },
+    "session_id": {
+      "type": "integer",
+      "description": "Session ID the process belongs to"
+    },
+    "wow64": {
+      "type": "boolean",
+      "description": "Whether the process is running under WoW64 (32-bit on 64-bit)"
+    },
+    "create_time": {
+      "type": "string",
+      "description": "Process creation timestamp (ISO 8601)"
+    },
+    "exit_time": {
+      "type": "string",
+      "description": "Process exit timestamp (ISO 8601), empty if still running"
+    },
+    "file_output": {
+      "type": "string",
+      "description": "File output information from Volatility"
+    }
+  },
+  "required": ["pid", "ppid", "image_file_name"]
+}

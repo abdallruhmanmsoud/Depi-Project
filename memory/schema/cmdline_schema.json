@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Command Line Schema",
+  "description": "Schema for normalized Volatility cmdline output. Each object represents the command line arguments for a single process.",
+  "type": "object",
+  "properties": {
+    "pid": {
+      "type": "integer",
+      "description": "Process ID"
+    },
+    "process": {
+      "type": "string",
+      "description": "Process name"
+    },
+    "args": {
+      "type": "string",
+      "description": "Full command line arguments string"
+    },
+    "arg_length": {
+      "type": "integer",
+      "description": "Length of the arguments string"
+    },
+    "contains_powershell": {
+      "type": "boolean",
+      "description": "Whether the command line references PowerShell"
+    },
+    "contains_cmd": {
+      "type": "boolean",
+      "description": "Whether the command line references cmd.exe"
+    },
+    "contains_encoded_command": {
+      "type": "boolean",
+      "description": "Whether the command line contains -EncodedCommand flag"
+    },
+    "contains_base64": {
+      "type": "boolean",
+      "description": "Whether the command line contains Base64-encoded content"
+    },
+    "contains_url": {
+      "type": "boolean",
+      "description": "Whether the command line contains a URL"
+    }
+  },
+  "required": ["pid", "process", "args"]
+}

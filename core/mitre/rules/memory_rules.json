@@ -1,0 +1,261 @@
+{
+    "category": "memory",
+    "version": "1.0.0",
+    "description": "MITRE ATT&CK rules for memory forensics analysis. These rules analyze a 164-feature memory vector covering process metadata, command-line artifacts, DLL characteristics, privilege tokens, handle analysis, network connections, malfind detections, and cross-feature composite scores.",
+    "rules": [
+        {
+            "rule_id": "MEM-001",
+            "rule_name": "Process Injection",
+            "description": "Detects signs of process injection by analyzing malfind results for executable memory regions with Read-Write-Execute (RWX) permissions. A high number of malfind findings combined with multiple RWX regions strongly indicates that one or more processes have been injected with foreign code, a hallmark of advanced malware and APT activity.",
+            "category": "memory",
+            "severity": "Critical",
+            "base_confidence": 0.85,
+            "mitre_technique_id": "T1055",
+            "mitre_technique_name": "Process Injection",
+            "mitre_tactic": "Defense Evasion",
+            "conditions": [
+                {"feature": "mf_total_findings", "operator": ">", "value": 5},
+                {"feature": "mf_rwx_count", "operator": ">", "value": 3}
+            ],
+            "recommendation": "Investigate injected processes by correlating malfind output with process trees. Acquire a full memory dump for offline analysis. Extract and disassemble injected code regions using Volatility's vaddump or procdump plugins. Cross-reference injected PIDs with network connections to identify C2 communication. Preserve evidence chain-of-custody for all extracted artifacts."
+        },
+        {
+            "rule_id": "MEM-002",
+            "rule_name": "Reflective DLL Loading",
+            "description": "Identifies potential reflective DLL loading by detecting an abnormally high count of DLLs loaded from suspicious (non-standard) paths combined with a large number of non-system DLLs. Reflective loading allows attackers to inject DLLs directly into process memory without touching disk, bypassing traditional file-based detection mechanisms.",
+            "category": "memory",
+            "severity": "Critical",
+            "base_confidence": 0.80,
+            "mitre_technique_id": "T1620",
+            "mitre_technique_name": "Reflective Code Loading",
+            "mitre_tactic": "Defense Evasion",
+            "conditions": [
+                {"feature": "dll_suspicious_path_count", "operator": ">", "value": 2},
+                {"feature": "dll_non_system_count", "operator": ">", "value": 50}
+            ],
+            "recommendation": "Enumerate all DLLs loaded from non-standard paths using dlllist and ldrmodules plugins. Compare loaded modules against known-good baselines. Identify DLLs loaded from user-writable directories (Temp, AppData, Downloads). Dump suspicious DLLs for static analysis and hash verification against threat intelligence feeds. Check for hollow processes using ldrmodules to detect unlinked DLLs."
+        },
+        {
+            "rule_id": "MEM-003",
+            "rule_name": "PowerShell Execution",
+            "description": "Detects active or recent PowerShell execution in memory by identifying PowerShell process instances and corresponding command-line artifacts. PowerShell is heavily abused by threat actors for fileless malware delivery, reconnaissance, lateral movement, and data exfiltration due to its deep system integration and scripting capabilities.",
+            "category": "memory",
+            "severity": "High",
+            "base_confidence": 0.75,
+            "mitre_technique_id": "T1059.001",
+            "mitre_technique_name": "Command and Scripting Interpreter: PowerShell",
+            "mitre_tactic": "Execution",
+            "conditions": [
+                {"feature": "proc_powershell_count", "operator": ">", "value": 0},
+                {"feature": "cmd_powershell_count", "operator": ">", "value": 0}
+            ],
+            "recommendation": "Extract full PowerShell command-line arguments from process memory. Search for encoded commands (-EncodedCommand, -e, -enc flags) and decode Base64 payloads. Analyze PowerShell script block logging artifacts in memory. Check for download cradles (Invoke-WebRequest, Net.WebClient, IEX patterns). Correlate PowerShell PIDs with parent processes to identify execution chain and determine if execution was user-initiated or automated."
+        },
+        {
+            "rule_id": "MEM-004",
+            "rule_name": "Credential Dumping",
+            "description": "Identifies potential credential dumping activity by detecting excessive handles to the LSASS process combined with elevated debug privileges. Tools like Mimikatz, ProcDump, and comsvcs.dll require debug privileges and LSASS handles to extract credentials from memory, making this combination a strong indicator of credential theft.",
+            "category": "memory",
+            "severity": "Critical",
+            "base_confidence": 0.90,
+            "mitre_technique_id": "T1003",
+            "mitre_technique_name": "OS Credential Dumping",
+            "mitre_tactic": "Credential Access",
+            "conditions": [
+                {"feature": "handle_lsass_handle_count", "operator": ">", "value": 5},
+                {"feature": "priv_debug_enabled", "operator": ">", "value": 10}
+            ],
+            "recommendation": "Immediately identify all processes holding handles to LSASS using the handles plugin filtered for lsass.exe. Dump suspicious processes and scan for Mimikatz signatures and credential extraction tool strings. Analyze the privileges of each process accessing LSASS. Initiate password reset procedures for all accounts on the affected system. Check for pass-the-hash or pass-the-ticket lateral movement indicators on connected systems."
+        },
+        {
+            "rule_id": "MEM-005",
+            "rule_name": "LSASS Access",
+            "description": "Detects an abnormally high number of process handles pointing to LSASS (Local Security Authority Subsystem Service). While some legitimate security software accesses LSASS, an excessive number of handles strongly suggests credential harvesting tools are actively reading LSASS memory to extract plaintext passwords, NTLM hashes, or Kerberos tickets.",
+            "category": "memory",
+            "severity": "Critical",
+            "base_confidence": 0.88,
+            "mitre_technique_id": "T1003.001",
+            "mitre_technique_name": "OS Credential Dumping: LSASS Memory",
+            "mitre_tactic": "Credential Access",
+            "conditions": [
+                {"feature": "handle_lsass_handle_count", "operator": ">", "value": 10}
+            ],
+            "recommendation": "Identify every process with an open handle to LSASS and verify its legitimacy against a known-good process whitelist. Extract and hash suspicious binaries for threat intelligence lookup. Check for minidump files of LSASS on disk or in memory. Review Windows Security Event Logs for Event ID 4656 (handle requests to LSASS). Assume credential compromise and rotate all credentials on the affected host and any accounts that were logged in."
+        },
+        {
+            "rule_id": "MEM-006",
+            "rule_name": "Code Injection via Malfind",
+            "description": "Detects advanced code injection using malfind analysis to identify private RWX memory regions that are not associated with legitimate JIT compilation. Non-JIT RWX private regions are a strong forensic indicator of shellcode injection, process hollowing, or in-memory payload execution typically seen in sophisticated malware frameworks like Cobalt Strike and Metasploit.",
+            "category": "memory",
+            "severity": "Critical",
+            "base_confidence": 0.87,
+            "mitre_technique_id": "T1055.012",
+            "mitre_technique_name": "Process Injection: Process Hollowing",
+            "mitre_tactic": "Defense Evasion",
+            "conditions": [
+                {"feature": "mf_rwx_private_count", "operator": ">", "value": 5},
+                {"feature": "mf_non_jit_rwx_count", "operator": ">", "value": 0}
+            ],
+            "recommendation": "Dump all non-JIT RWX private memory regions using vaddump for disassembly and signature scanning. Analyze PE headers within memory regions to detect hollowed processes. Compare process image in memory against the on-disk binary using process integrity checks. Look for MZ/PE headers, shellcode NOP sleds, and encoded payloads within flagged regions. Document all findings with memory addresses and process context for incident response."
+        },
+        {
+            "rule_id": "MEM-007",
+            "rule_name": "Token Manipulation",
+            "description": "Identifies potential access token manipulation by detecting processes with SeCreateTokenPrivilege and an unusually high number of SeImpersonatePrivilege instances. Attackers abuse token privileges to elevate from service accounts to SYSTEM, impersonate other users, or create new tokens with elevated rights, enabling unauthorized access to protected resources.",
+            "category": "memory",
+            "severity": "High",
+            "base_confidence": 0.78,
+            "mitre_technique_id": "T1134",
+            "mitre_technique_name": "Access Token Manipulation",
+            "mitre_tactic": "Privilege Escalation",
+            "conditions": [
+                {"feature": "priv_create_token_enabled", "operator": ">", "value": 0},
+                {"feature": "priv_impersonate_enabled", "operator": ">", "value": 20}
+            ],
+            "recommendation": "Enumerate all processes with SeCreateTokenPrivilege and SeImpersonatePrivilege using the privileges plugin. Identify which processes should not normally hold these privileges. Check for Potato-family exploits (JuicyPotato, PrintSpoofer, RoguePotato) by analyzing process command lines and parent relationships. Investigate any non-system process running with SYSTEM-level tokens. Verify token integrity and ownership against expected service accounts."
+        },
+        {
+            "rule_id": "MEM-008",
+            "rule_name": "Persistence via Registry",
+            "description": "Detects potential registry-based persistence mechanisms by identifying an unusually high number of open handles to known persistence registry keys (Run, RunOnce, Services, Winlogon, etc.). Attackers frequently abuse these registry locations to ensure their malware survives system reboots and maintains long-term access.",
+            "category": "memory",
+            "severity": "High",
+            "base_confidence": 0.75,
+            "mitre_technique_id": "T1547.001",
+            "mitre_technique_name": "Boot or Logon Autostart Execution: Registry Run Keys / Startup Folder",
+            "mitre_tactic": "Persistence",
+            "conditions": [
+                {"feature": "handle_persistence_key_count", "operator": ">", "value": 100}
+            ],
+            "recommendation": "Extract and analyze all open handles to persistence-related registry keys. Cross-reference with registry hive analysis from disk forensics to identify newly added or modified entries. Check Run/RunOnce keys, Services, Winlogon Shell/Userinit, AppInit_DLLs, and Scheduled Task registry entries. Identify the processes that hold these handles and verify their legitimacy. Timeline registry modifications against known compromise indicators."
+        },
+        {
+            "rule_id": "MEM-009",
+            "rule_name": "Lateral Movement via Remote Services",
+            "description": "Detects potential lateral movement by identifying active external network connections combined with connections on uncommon ports. Lateral movement typically involves establishing connections to other hosts on the network using protocols like SMB, WMI, WinRM, RDP, or custom C2 channels over non-standard ports.",
+            "category": "memory",
+            "severity": "High",
+            "base_confidence": 0.72,
+            "mitre_technique_id": "T1021",
+            "mitre_technique_name": "Remote Services",
+            "mitre_tactic": "Lateral Movement",
+            "conditions": [
+                {"feature": "net_external_count", "operator": ">", "value": 5},
+                {"feature": "net_uncommon_port_count", "operator": ">", "value": 2}
+            ],
+            "recommendation": "Map all active network connections using netscan with full process attribution. Identify connections to internal hosts on non-standard ports that could indicate lateral movement. Check for SMB (445), WinRM (5985/5986), RDP (3389), and WMI (135) connections to other internal hosts. Correlate remote connection targets with the organization's asset inventory to identify unauthorized access patterns. Investigate the processes initiating these connections for signs of compromise."
+        },
+        {
+            "rule_id": "MEM-010",
+            "rule_name": "Privilege Escalation",
+            "description": "Detects potential privilege escalation by analyzing the ratio of high-risk privileges enabled across processes and counting processes with suspiciously elevated privileges. A high ratio of dangerous privileges (SeDebugPrivilege, SeTcbPrivilege, SeAssignPrimaryTokenPrivilege) enabled across the system indicates exploitation of kernel vulnerabilities or privilege escalation tools.",
+            "category": "memory",
+            "severity": "Critical",
+            "base_confidence": 0.82,
+            "mitre_technique_id": "T1068",
+            "mitre_technique_name": "Exploitation for Privilege Escalation",
+            "mitre_tactic": "Privilege Escalation",
+            "conditions": [
+                {"feature": "priv_high_risk_enabled_ratio", "operator": ">", "value": 0.2},
+                {"feature": "priv_suspicious_high_priv_proc_count", "operator": ">", "value": 5}
+            ],
+            "recommendation": "Audit all processes with elevated privileges using the privileges plugin. Focus on user-space processes running with kernel-level privileges. Check for known privilege escalation exploits by analyzing process ancestry and loaded modules. Investigate recently created processes with SYSTEM-level tokens that originated from low-privilege parent processes. Verify patch levels for known local privilege escalation CVEs. Document the privilege escalation chain for the incident report."
+        },
+        {
+            "rule_id": "MEM-011",
+            "rule_name": "Suspicious Network Activity",
+            "description": "Identifies potential Command and Control (C2) communication by detecting a high number of external network connections distributed across multiple unique remote hosts. This pattern is consistent with beaconing behavior, data staging, or multi-stage C2 infrastructure where malware communicates with distributed command servers to evade single-point blocking.",
+            "category": "memory",
+            "severity": "High",
+            "base_confidence": 0.76,
+            "mitre_technique_id": "T1071",
+            "mitre_technique_name": "Application Layer Protocol",
+            "mitre_tactic": "Command and Control",
+            "conditions": [
+                {"feature": "net_external_count", "operator": ">", "value": 10},
+                {"feature": "net_unique_remote_hosts", "operator": ">", "value": 5}
+            ],
+            "recommendation": "Extract all external network connections with full socket details (local/remote IP, port, PID, process name). Perform reverse DNS and WHOIS lookups on all unique remote IP addresses. Check remote IPs against threat intelligence feeds and known C2 infrastructure databases. Analyze connection timing for beaconing patterns (regular intervals). Identify the owning processes and verify they are expected to make external connections. Capture network traffic if possible for protocol analysis."
+        },
+        {
+            "rule_id": "MEM-012",
+            "rule_name": "Command-Line Execution Abuse",
+            "description": "Detects suspicious command-line activity by identifying a high volume of suspicious command patterns combined with execution indicator artifacts. This covers abuse of native Windows utilities (LOLBins) such as certutil, bitsadmin, mshta, regsvr32, and wscript that attackers leverage for download, execution, and defense evasion through living-off-the-land techniques.",
+            "category": "memory",
+            "severity": "High",
+            "base_confidence": 0.77,
+            "mitre_technique_id": "T1059",
+            "mitre_technique_name": "Command and Scripting Interpreter",
+            "mitre_tactic": "Execution",
+            "conditions": [
+                {"feature": "cmd_suspicious_total", "operator": ">", "value": 5},
+                {"feature": "cmd_execution_indicator_count", "operator": ">", "value": 0}
+            ],
+            "recommendation": "Extract and analyze all suspicious command-line strings from process memory. Decode any obfuscated or encoded command arguments. Identify LOLBin abuse patterns (certutil -urlcache, bitsadmin /transfer, mshta javascript:, regsvr32 /s /n /u). Map command execution chains through parent-child process relationships. Check for download cradles, encoded payloads, and file-less execution patterns. Preserve all command-line artifacts as forensic evidence."
+        },
+        {
+            "rule_id": "MEM-013",
+            "rule_name": "Malware Execution Indicators",
+            "description": "Detects likely malware execution by combining cross-feature attack tool ratio analysis with malfind detections. The attack tool ratio measures the density of known attack tool signatures (Mimikatz, Cobalt Strike, Metasploit, etc.) found across processes, while malfind findings confirm the presence of injected or suspicious code in memory, providing high-confidence malware detection.",
+            "category": "memory",
+            "severity": "Critical",
+            "base_confidence": 0.88,
+            "mitre_technique_id": "T1204",
+            "mitre_technique_name": "User Execution",
+            "mitre_tactic": "Execution",
+            "conditions": [
+                {"feature": "cross_attack_tool_ratio", "operator": ">", "value": 0.01},
+                {"feature": "mf_total_findings", "operator": ">", "value": 3}
+            ],
+            "recommendation": "Identify all processes flagged with attack tool signatures using YARA rules and string matching. Dump flagged processes for full static and dynamic analysis. Submit hashes to VirusTotal, Hybrid Analysis, and internal sandboxes. Identify the initial infection vector by tracing process creation timelines. Quarantine the affected system and begin lateral movement assessment on connected network segments. Preserve memory dump as primary forensic evidence."
+        },
+        {
+            "rule_id": "MEM-014",
+            "rule_name": "DLL Side-Loading",
+            "description": "Detects DLL side-loading attacks where legitimate applications are tricked into loading malicious DLLs from user-writable directories. The combination of DLLs loaded from user directories and suspicious paths indicates that attackers have planted malicious DLLs alongside legitimate executables to achieve code execution under the guise of trusted processes.",
+            "category": "memory",
+            "severity": "High",
+            "base_confidence": 0.79,
+            "mitre_technique_id": "T1574.002",
+            "mitre_technique_name": "Hijack Execution Flow: DLL Side-Loading",
+            "mitre_tactic": "Persistence",
+            "conditions": [
+                {"feature": "dll_user_dir_count", "operator": ">", "value": 2},
+                {"feature": "dll_suspicious_path_count", "operator": ">", "value": 1}
+            ],
+            "recommendation": "Enumerate all DLLs loaded from user-writable directories (AppData, Temp, Downloads, Desktop). Verify DLL digital signatures and compare hashes against known-good versions. Identify the host executable loading these DLLs and determine if it is a known side-loading target (e.g., legitimate signed binaries that load DLLs from their current directory). Check DLL load order and search path configurations. Dump suspicious DLLs for reverse engineering and malware analysis."
+        },
+        {
+            "rule_id": "MEM-015",
+            "rule_name": "Suspicious Process Threads",
+            "description": "Identifies anomalous process behavior by detecting processes with zero threads (potentially hollowed or zombie processes) and exited processes that remain resident in memory. These patterns indicate process hollowing, where legitimate process images are replaced with malicious code, or terminated malware processes that maintain memory residency for persistence.",
+            "category": "memory",
+            "severity": "Medium",
+            "base_confidence": 0.70,
+            "mitre_technique_id": "T1106",
+            "mitre_technique_name": "Native API",
+            "mitre_tactic": "Execution",
+            "conditions": [
+                {"feature": "proc_zero_thread_count", "operator": ">", "value": 3},
+                {"feature": "proc_exited_still_in_memory", "operator": ">", "value": 5}
+            ],
+            "recommendation": "Investigate all processes with zero active threads using pslist/psscan comparison. These may be hollowed processes where the original code has been replaced. Analyze exited processes still in memory for residual malicious artifacts using memdump. Cross-reference with process creation/termination timelines. Check for process DKOM (Direct Kernel Object Manipulation) by comparing pslist, psscan, and psxview results. Extract any remaining code or data from these process address spaces."
+        },
+        {
+            "rule_id": "MEM-016",
+            "rule_name": "Advanced Registry Persistence with Anomaly Score",
+            "description": "Detects sophisticated registry-based persistence mechanisms corroborated by a high cross-feature anomaly composite score. The combination of excessive persistence key handles and elevated anomaly scores indicates a coordinated attack where multiple forensic indicators align, suggesting advanced persistent threat (APT) activity with established long-term footholds in the system.",
+            "category": "memory",
+            "severity": "Critical",
+            "base_confidence": 0.85,
+            "mitre_technique_id": "T1547",
+            "mitre_technique_name": "Boot or Logon Autostart Execution",
+            "mitre_tactic": "Persistence",
+            "conditions": [
+                {"feature": "handle_persistence_key_count", "operator": ">", "value": 200},
+                {"feature": "cross_anomaly_composite_score", "operator": ">", "value": 50}
+            ],
+            "recommendation": "Conduct a comprehensive analysis of all persistence mechanisms across registry, scheduled tasks, services, and startup locations. Correlate the high anomaly composite score with individual feature anomalies to identify the most suspicious behavioral patterns. Perform full registry hive extraction and timeline analysis. Cross-reference with disk forensics to identify dropped payloads referenced by persistence entries. Engage threat hunting team for APT assessment and determine the scope of compromise across the enterprise environment."
+        }
+    ]
+}

@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Privilege Schema",
+  "description": "Schema for normalized Volatility privileges output. Each object represents a single privilege assigned to a process.",
+  "type": "object",
+  "properties": {
+    "pid": {
+      "type": "integer",
+      "description": "Process ID"
+    },
+    "process": {
+      "type": "string",
+      "description": "Process name"
+    },
+    "value": {
+      "type": "integer",
+      "description": "Privilege value identifier"
+    },
+    "privilege": {
+      "type": "string",
+      "description": "Privilege name (e.g., SeDebugPrivilege)"
+    },
+    "attributes": {
+      "type": "string",
+      "description": "Privilege attributes string"
+    },
+    "description": {
+      "type": "string",
+      "description": "Human-readable description of the privilege"
+    },
+    "enabled": {
+      "type": "boolean",
+      "description": "Whether the privilege is currently enabled"
+    },
+    "present": {
+      "type": "boolean",
+      "description": "Whether the privilege is present in the token"
+    },
+    "default": {
+      "type": "boolean",
+      "description": "Whether the privilege is enabled by default"
+    }
+  },
+  "required": ["pid", "process", "privilege"]
+}

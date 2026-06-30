@@ -1,0 +1,63 @@
+{
+    "timestamp": "2026-06-22T16:49:20.001341",
+    "model": "E:\\Big_Project\\DEPI-Project\\memory\\models\\isolation_forest.pkl",
+    "scaler": "E:\\Big_Project\\DEPI-Project\\memory\\models\\scaler.pkl",
+    "feature_columns": "E:\\Big_Project\\DEPI-Project\\memory\\models\\feature_columns.json",
+    "training_set": {
+        "cases_used": [
+            "MemoryDump_forensics_20260616_083039",
+            "Windows 10 x64-043303df_runner_20260622_070714",
+            "Win11Dump_runner_20260622_080128"
+        ],
+        "safe_case_count": 3,
+        "feature_count": 164,
+        "n_estimators": 200,
+        "contamination": "auto",
+        "random_state": 42,
+        "scaler": "StandardScaler"
+    },
+    "validation": {
+        "total_cases_scored": 4,
+        "predicted_anomalous": 0,
+        "predicted_normal": 4,
+        "highest_anomaly_check": {
+            "expected": "DESKTOP-88S7USO",
+            "actual": "DESKTOP-88S7USO-20260616-144313_forensics_20260616_120619",
+            "status": "PASS"
+        }
+    },
+    "case_scores": [
+        {
+            "rank": 1,
+            "dump_name": "DESKTOP-88S7USO-20260616-144313_forensics_20260616_120619",
+            "label": "suspicious",
+            "anomaly_score": -0.421473,
+            "prediction": "normal",
+            "cross_anomaly_composite_score": 10447.0
+        },
+        {
+            "rank": 2,
+            "dump_name": "MemoryDump_forensics_20260616_083039",
+            "label": "safe",
+            "anomaly_score": -0.399102,
+            "prediction": "normal",
+            "cross_anomaly_composite_score": 110.0
+        },
+        {
+            "rank": 3,
+            "dump_name": "Windows 10 x64-043303df_runner_20260622_070714",
+            "label": "safe",
+            "anomaly_score": -0.381187,
+            "prediction": "normal",
+            "cross_anomaly_composite_score": 140.0
+        },
+        {
+            "rank": 4,
+            "dump_name": "Win11Dump_runner_20260622_080128",
+            "label": "safe",
+            "anomaly_score": -0.372534,
+            "prediction": "normal",
+            "cross_anomaly_composite_score": 179.0
+        }
+    ]
+}

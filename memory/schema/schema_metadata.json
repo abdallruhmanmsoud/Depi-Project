@@ -1,0 +1,18 @@
+{
+  "schema_name": "memory",
+  "version": "1.0.0",
+  "created_by": "AI Team",
+  "date": "2026-06-14",
+  "description": "Normalized schemas for Volatility 3 memory forensics output",
+  "volatility_version": "3.x",
+  "schemas": [
+    "process_schema.json",
+    "cmdline_schema.json",
+    "dll_schema.json",
+    "privilege_schema.json",
+    "handle_schema.json",
+    "network_schema.json",
+    "malfind_schema.json",
+    "memory_case_schema.json"
+  ]
+}

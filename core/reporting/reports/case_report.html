@@ -1,0 +1,2388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Forensics Report — CASE-20260630_114753</title>
+    <style>
+        :root {
+            --bg-primary: #0a0e17;
+            --bg-secondary: #111827;
+            --bg-card: #1a2234;
+            --bg-card-alt: #1e293b;
+            --text-primary: #e2e8f0;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --accent-red: #ef4444;
+            --accent-orange: #f97316;
+            --accent-yellow: #eab308;
+            --accent-green: #22c55e;
+            --accent-blue: #3b82f6;
+            --accent-purple: #8b5cf6;
+            --accent-cyan: #06b6d4;
+            --border-color: #1e293b;
+            --border-highlight: #334155;
+            --critical-bg: rgba(239, 68, 68, 0.1);
+            --critical-border: rgba(239, 68, 68, 0.3);
+            --high-bg: rgba(249, 115, 22, 0.1);
+            --high-border: rgba(249, 115, 22, 0.3);
+            --medium-bg: rgba(234, 179, 8, 0.1);
+            --medium-border: rgba(234, 179, 8, 0.3);
+            --low-bg: rgba(34, 197, 94, 0.1);
+            --low-border: rgba(34, 197, 94, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+            padding: 0;
+        }
+
+        .report-container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 40px 32px;
+        }
+
+        /* Header */
+        .report-header {
+            text-align: center;
+            padding: 48px 32px;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+            border: 1px solid var(--border-highlight);
+            border-radius: 16px;
+            margin-bottom: 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .report-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple), var(--accent-cyan));
+        }
+
+        .report-header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+
+        .report-header .subtitle {
+            font-size: 14px;
+            color: var(--text-muted);
+            letter-spacing: 1px;
+        }
+
+        .report-header .case-id {
+            font-size: 16px;
+            color: var(--accent-cyan);
+            margin-top: 12px;
+            font-family: 'Consolas', 'Courier New', monospace;
+        }
+
+        /* Sections */
+        .section {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            margin-bottom: 24px;
+            overflow: hidden;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 20px 24px;
+            background: var(--bg-card-alt);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .section-number {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 700;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .section-body {
+            padding: 24px;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        thead th {
+            background: var(--bg-card-alt);
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 1px;
+            border-bottom: 2px solid var(--border-highlight);
+        }
+
+        tbody td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-primary);
+            vertical-align: top;
+        }
+
+        tbody tr:hover {
+            background: rgba(59, 130, 246, 0.04);
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .key-value-table td:first-child {
+            font-weight: 600;
+            color: var(--text-secondary);
+            width: 200px;
+            white-space: nowrap;
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-critical {
+            background: var(--critical-bg);
+            color: var(--accent-red);
+            border: 1px solid var(--critical-border);
+        }
+
+        .badge-high {
+            background: var(--high-bg);
+            color: var(--accent-orange);
+            border: 1px solid var(--high-border);
+        }
+
+        .badge-medium {
+            background: var(--medium-bg);
+            color: var(--accent-yellow);
+            border: 1px solid var(--medium-border);
+        }
+
+        .badge-low {
+            background: var(--low-bg);
+            color: var(--accent-green);
+            border: 1px solid var(--low-border);
+        }
+
+        .badge-safe {
+            background: var(--low-bg);
+            color: var(--accent-green);
+            border: 1px solid var(--low-border);
+        }
+
+        .badge-malicious {
+            background: var(--critical-bg);
+            color: var(--accent-red);
+            border: 1px solid var(--critical-border);
+        }
+
+        /* Metric Cards */
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .metric-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .metric-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .metric-value {
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .metric-value.critical { color: var(--accent-red); }
+        .metric-value.high { color: var(--accent-orange); }
+        .metric-value.medium { color: var(--accent-yellow); }
+        .metric-value.low { color: var(--accent-green); }
+        .metric-value.safe { color: var(--accent-green); }
+
+        /* Evidence and text blocks */
+        .evidence-item {
+            padding: 16px 20px;
+            background: var(--bg-secondary);
+            border-left: 3px solid var(--accent-blue);
+            border-radius: 0 8px 8px 0;
+            margin-bottom: 12px;
+        }
+
+        .evidence-item.critical { border-left-color: var(--accent-red); }
+        .evidence-item.high { border-left-color: var(--accent-orange); }
+        .evidence-item.medium { border-left-color: var(--accent-yellow); }
+
+        .evidence-rank {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .evidence-text {
+            color: var(--text-primary);
+            font-size: 14px;
+        }
+
+        .evidence-detail {
+            color: var(--text-secondary);
+            font-size: 13px;
+            margin-top: 4px;
+        }
+
+        /* MITRE Technique Cards */
+        .technique-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+
+        .technique-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .technique-id {
+            font-family: 'Consolas', monospace;
+            font-size: 14px;
+            color: var(--accent-cyan);
+            font-weight: 600;
+        }
+
+        .technique-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .technique-tactic {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .confidence-bar {
+            height: 6px;
+            background: var(--bg-card);
+            border-radius: 3px;
+            margin-top: 12px;
+            overflow: hidden;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.5s ease;
+        }
+
+        /* IOC List */
+        .ioc-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 16px;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            font-family: 'Consolas', monospace;
+            font-size: 13px;
+        }
+
+        .ioc-type {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--accent-purple);
+            font-weight: 600;
+            min-width: 80px;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        .ioc-value {
+            color: var(--text-primary);
+            word-break: break-all;
+        }
+
+        /* Recommendation sections */
+        .rec-category {
+            margin-bottom: 20px;
+        }
+
+        .rec-category-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--accent-cyan);
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .rec-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 8px 0;
+            color: var(--text-primary);
+            font-size: 14px;
+        }
+
+        .rec-bullet {
+            color: var(--accent-blue);
+            font-weight: 700;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        /* Timeline */
+        .timeline-entry {
+            display: flex;
+            gap: 16px;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .timeline-entry:last-child { border-bottom: none; }
+
+        .timeline-time {
+            font-family: 'Consolas', monospace;
+            font-size: 12px;
+            color: var(--text-muted);
+            min-width: 160px;
+            flex-shrink: 0;
+        }
+
+        .timeline-desc {
+            color: var(--text-primary);
+            font-size: 14px;
+        }
+
+        /* Summary text */
+        .summary-text {
+            color: var(--text-secondary);
+            font-size: 15px;
+            line-height: 1.8;
+        }
+
+        .summary-text strong {
+            color: var(--text-primary);
+        }
+
+        /* Conclusion */
+        .conclusion {
+            padding: 24px;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(139, 92, 246, 0.05));
+            border: 1px solid var(--border-highlight);
+            border-radius: 10px;
+        }
+
+        .conclusion p {
+            color: var(--text-secondary);
+            font-size: 15px;
+            line-height: 1.8;
+        }
+
+        /* Footer */
+        .report-footer {
+            text-align: center;
+            padding: 32px;
+            color: var(--text-muted);
+            font-size: 12px;
+            border-top: 1px solid var(--border-color);
+            margin-top: 40px;
+        }
+
+        /* Print styles */
+        @media print {
+            body { background: white; color: #1a1a1a; }
+            .report-container { padding: 20px; }
+            .report-header { background: #f8fafc; border-color: #e2e8f0; }
+            .report-header h1 { -webkit-text-fill-color: #1e40af; }
+            .section { border-color: #e2e8f0; }
+            .section-header { background: #f8fafc; }
+            .metric-card { background: #f8fafc; border-color: #e2e8f0; }
+            .evidence-item { background: #f8fafc; }
+            .technique-card { background: #f8fafc; border-color: #e2e8f0; }
+            .ioc-item { background: #f8fafc; }
+            thead th { background: #f1f5f9; color: #475569; }
+            tbody td { color: #1a1a1a; }
+            .summary-text { color: #475569; }
+            .conclusion { background: #f8fafc; }
+        }
+    </style>
+</head>
+<body>
+    <div class="report-container">
+
+        <!-- Header -->
+        <div class="report-header">
+            <h1>Digital Forensics Report</h1>
+            <div class="subtitle">MITRE ATT&CK Threat Intelligence Analysis</div>
+            <div class="case-id">CASE-20260630_114753</div>
+        </div>
+
+        <!-- 1. Case Information -->
+        <div class="section">
+            <div class="section-header">
+                <div class="section-number">1</div>
+                <div class="section-title">Case Information</div>
+            </div>
+            <div class="section-body">
+                <table class="key-value-table">
+                    <tbody>
+                        <tr><td>Case ID</td><td>CASE-20260630_114753</td></tr>
+                        <tr><td>Category</td><td>Disk</td></tr>
+                        <tr><td>Tool</td><td>E:\Big_Project\DEPI-Project</td></tr>
+                        <tr><td>Analysis Date</td><td>2026-06-30T11:49:49.723141+00:00</td></tr>
+                        <tr><td>Processing Time</td><td>57.49 ms</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 2. Executive Summary -->
+        <div class="section">
+            <div class="section-header">
+                <div class="section-number">2</div>
+                <div class="section-title">Executive Summary</div>
+            </div>
+            <div class="section-body">
+                <div class="summary-text">
+                    The Disk Forensics AI pipeline has classified this case as <strong>MALICIOUS</strong> with a risk level of <strong>CRITICAL</strong> and an anomaly score of <strong>0.6943</strong>. The MITRE ATT&CK mapping engine identified <strong>11</strong> matching techniques across the following tactics: Execution, Defense Evasion, Persistence, Impact. Of these, <strong>8</strong> are rated Critical severity, requiring immediate investigation and containment.
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. AI Assessment -->
+        <div class="section">
+            <div class="section-header">
+                <div class="section-number">3</div>
+                <div class="section-title">AI Assessment</div>
+            </div>
+            <div class="section-body">
+                <div class="metric-grid">
+                    
+            <div class="metric-card">
+                <div class="metric-label">Prediction</div>
+                <div class="metric-value malicious">MALICIOUS</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">Risk Level</div>
+                <div class="metric-value critical">CRITICAL</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">Anomaly Score</div>
+                <div class="metric-value critical">0.6943</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">Confidence</div>
+                <div class="metric-value">94%</div>
+            </div>
+        
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. Evidence Summary -->
+        <div class="section">
+            <div class="section-header">
+                <div class="section-number">4</div>
+                <div class="section-title">Evidence Summary</div>
+            </div>
+            <div class="section-body">
+                
+                <div class="evidence-item critical">
+                    <div class="evidence-rank">#1 — CRITICAL</div>
+                    <div class="evidence-text">AI Verdict: Anomalous Activity Detected</div>
+                    <div class="evidence-detail">The Isolation Forest model classified this case as MALICIOUS with an anomaly score of 0.6943. Higher anomaly scores indicate greater deviation from normal patterns.</div>
+                </div>
+            
+
+                <div class="evidence-item critical">
+                    <div class="evidence-rank">#2 — CRITICAL</div>
+                    <div class="evidence-text">MITRE T1204: User Execution</div>
+                    <div class="evidence-detail">Tactic: Execution. Confidence: 99%. Evidence: executables_in_temp &gt; 10 (actual: 276)</div>
+                </div>
+            
+
+                <div class="evidence-item high">
+                    <div class="evidence-rank">#3 — HIGH</div>
+                    <div class="evidence-text">MITRE T1204.002: User Execution: Malicious File</div>
+                    <div class="evidence-detail">Tactic: Execution. Confidence: 83%. Evidence: executables_in_downloads &gt; 20 (actual: 37)</div>
+                </div>
+            
+
+                <div class="evidence-item medium">
+                    <div class="evidence-rank">#4 — MEDIUM</div>
+                    <div class="evidence-text">MITRE T1204: User Execution</div>
+                    <div class="evidence-detail">Tactic: Execution. Confidence: 89%. Evidence: executables_on_desktop &gt; 50 (actual: 680)</div>
+                </div>
+            
+
+                <div class="evidence-item critical">
+                    <div class="evidence-rank">#5 — CRITICAL</div>
+                    <div class="evidence-text">MITRE T1036.007: Masquerading: Double File Extension</div>
+                    <div class="evidence-detail">Tactic: Defense Evasion. Confidence: 100%. Evidence: double_extension_count &gt; 100 (actual: 30584)</div>
+                </div>
+            
+
+                <div class="evidence-item critical">
+                    <div class="evidence-rank">#6 — CRITICAL</div>
+                    <div class="evidence-text">MITRE T1547: Boot or Logon Autostart Execution</div>
+                    <div class="evidence-detail">Tactic: Persistence. Confidence: 100%. Evidence: persistence_indicators &gt; 100 (actual: 10146)</div>
+                </div>
+            
+            </div>
+        </div>
+
+        <!-- 5. Feature Highlights -->
+        <div class="section">
+            <div class="section-header">
+                <div class="section-number">5</div>
+                <div class="section-title">Feature Highlights</div>
+            </div>
+            <div class="section-body">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Feature</th>
+                            <th>Value</th>
+                            <th>Significance</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        
+                <tr>
+                    <td>1</td>
+                    <td>Double-extension files</td>
+                    <td><strong>30584.0</strong></td>
+                    <td><span class="badge badge-critical">CRITICAL</span> (305.84x threshold)</td>
+                </tr>
+            
+
+                <tr>
+                    <td>2</td>
+                    <td>Persistence indicators</td>
+                    <td><strong>10146.0</strong></td>
+                    <td><span class="badge badge-critical">CRITICAL</span> (101.46x threshold)</td>
+                </tr>
+            
+
+                <tr>
+                    <td>3</td>
+                    <td>Execution risk score</td>
+                    <td><strong>467414.4</strong></td>
+                    <td><span class="badge badge-critical">CRITICAL</span> (46.74x threshold)</td>
+                </tr>
+            
+
+                <tr>
+                    <td>4</td>
+                    <td>Scripts in suspicious dirs</td>
+                    <td><strong>189.0</strong></td>
+                    <td><span class="badge badge-critical">CRITICAL</span> (37.8x threshold)</td>
+                </tr>
+            
+
+                <tr>
+                    <td>5</td>
+                    <td>Executables in Temp</td>
+                    <td><strong>276.0</strong></td>
+                    <td><span class="badge badge-critical">CRITICAL</span> (27.6x threshold)</td>
+                </tr>
+            
+
+                <tr>
+                    <td>6</td>
+                    <td>Executables on Desktop</td>
+                    <td><strong>680.0</strong></td>
+                    <td><span class="badge badge-critical">CRITICAL</span> (13.6x threshold)</td>
+                </tr>
+            
+
+                <tr>
+                    <td>7</td>
+                    <td>Persistence score</td>
+                    <td><strong>52894.0</strong></td>
+                    <td><span class="badge badge-critical">CRITICAL</span> (10.58x threshold)</td>
+                </tr>
+            
+
+                <tr>
+                    <td>8</td>
+                    <td>Overall disk risk score</td>
+                    <td><strong>548511.106</strong></td>
+                    <td><span class="badge badge-critical">CRITICAL</span> (5.49x threshold)</td>
+                </tr>
+            
+
+                <tr>
+                    <td>9</td>
+                    <td>File creation bursts</td>
+                    <td><strong>99.0</strong></td>
+                    <td><span class="badge badge-high">HIGH</span> (4.95x threshold)</td>
+                </tr>
+            
+
+                <tr>
+                    <td>10</td>
+                    <td>Executables in Downloads</td>
+                    <td><strong>37.0</strong></td>
+                    <td><span class="badge badge-elevated">ELEVATED</span> (1.85x threshold)</td>
+                </tr>
+            
+
+                <tr>
+                    <td>11</td>
+                    <td>Night activity ratio</td>
+                    <td><strong>0.702182</strong></td>
+                    <td><span class="badge badge-elevated">ELEVATED</span> (1.4x threshold)</td>
+                </tr>
+            
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 6. MITRE ATT&CK Mapping -->
+        <div class="section">
+            <div class="section-header">
+                <div class="section-number">6</div>
+                <div class="section-title">MITRE ATT&CK Mapping</div>
+            </div>
+            <div class="section-body">
+                
+                <div class="technique-card">
+                    <div class="technique-header">
+                        <div>
+                            <div class="technique-name">User Execution</div>
+                            <div class="technique-tactic">Execution</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div class="technique-id">T1204</div>
+                            <span class="badge badge-critical">Critical</span>
+                        </div>
+                    </div>
+                    <div style="color: var(--text-secondary); font-size: 13px; margin-bottom: 8px;">
+                        Detects executable files located in temporary directories, a common indicator of malware staging. Threat actors frequently drop malicious executables in Temp directories because they are writable by default, rarely monitored, and provide a low-profile location for initial payload execution before establishing persistence.
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted);">
+                        <span>Confidence</span>
+                        <span>99%</span>
+                    </div>
+                    <div class="confidence-bar">
+                        <div class="confidence-fill" style="width: 98.89%; background: var(--accent-red);"></div>
+                    </div>
+                </div>
+            
+
+                <div class="technique-card">
+                    <div class="technique-header">
+                        <div>
+                            <div class="technique-name">User Execution: Malicious File</div>
+                            <div class="technique-tactic">Execution</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div class="technique-id">T1204.002</div>
+                            <span class="badge badge-high">High</span>
+                        </div>
+                    </div>
+                    <div style="color: var(--text-secondary); font-size: 13px; margin-bottom: 8px;">
+                        Identifies executable files in the Downloads directory, which may indicate user-downloaded malware, social engineering payloads, or drive-by download artifacts. While some executables in Downloads are legitimate, a high count combined with other indicators suggests systematic malware delivery targeting end users.
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted);">
+                        <span>Confidence</span>
+                        <span>83%</span>
+                    </div>
+                    <div class="confidence-bar">
+                        <div class="confidence-fill" style="width: 83.14%; background: var(--accent-red);"></div>
+                    </div>
+                </div>
+            
+
+                <div class="technique-card">
+                    <div class="technique-header">
+                        <div>
+                            <div class="technique-name">User Execution</div>
+                            <div class="technique-tactic">Execution</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div class="technique-id">T1204</div>
+                            <span class="badge badge-medium">Medium</span>
+                        </div>
+                    </div>
+                    <div style="color: var(--text-secondary); font-size: 13px; margin-bottom: 8px;">
+                        Detects a high count of executable files on the Desktop, which may indicate malware payloads placed for easy user execution, social engineering artifacts, or attacker tools staged on the Desktop for convenient access during an active compromise.
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted);">
+                        <span>Confidence</span>
+                        <span>89%</span>
+                    </div>
+                    <div class="confidence-bar">
+                        <div class="confidence-fill" style="width: 88.89%; background: var(--accent-red);"></div>
+                    </div>
+                </div>
+            
+
+                <div class="technique-card">
+                    <div class="technique-header">
+                        <div>
+                            <div class="technique-name">Masquerading: Double File Extension</div>
+                            <div class="technique-tactic">Defense Evasion</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div class="technique-id">T1036.007</div>
+                            <span class="badge badge-critical">Critical</span>
+                        </div>
+                    </div>
+                    <div style="color: var(--text-secondary); font-size: 13px; margin-bottom: 8px;">
+                        Identifies files using double extensions (e.g., document.pdf.exe, invoice.docx.scr) which is a classic social engineering technique to disguise executable files as benign documents. Double extensions exploit the Windows default behavior of hiding known file extensions, making malicious executables appear to be safe document files.
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted);">
+                        <span>Confidence</span>
+                        <span>100%</span>
+                    </div>
+                    <div class="confidence-bar">
+                        <div class="confidence-fill" style="width: 100.0%; background: var(--accent-red);"></div>
+                    </div>
+                </div>
+            
+
+                <div class="technique-card">
+                    <div class="technique-header">
+                        <div>
+                            <div class="technique-name">Boot or Logon Autostart Execution</div>
+                            <div class="technique-tactic">Persistence</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div class="technique-id">T1547</div>
+                            <span class="badge badge-critical">Critical</span>
+                        </div>
+                    </div>
+                    <div style="color: var(--text-secondary); font-size: 13px; margin-bottom: 8px;">
+                        Detects a high count of persistence-related artifacts including startup entries, scheduled tasks, registry run keys, and service installations. An elevated persistence indicator count suggests that malware or an attacker has established multiple persistence mechanisms to survive system reboots and maintain access to the compromised system.
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted);">
+                        <span>Confidence</span>
+                        <span>100%</span>
+                    </div>
+                    <div class="confidence-bar">
+                        <div class="confidence-fill" style="width: 100.0%; background: var(--accent-red);"></div>
+                    </div>
+                </div>
+            
+
+                <div class="technique-card">
+                    <div class="technique-header">
+                        <div>
+                            <div class="technique-name">Boot or Logon Autostart Execution: Registry Run Keys / Startup Folder</div>
+                            <div class="technique-tactic">Persistence</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div class="technique-id">T1547.001</div>
+                            <span class="badge badge-critical">Critical</span>
+                        </div>
+                    </div>
+                    <div style="color: var(--text-secondary); font-size: 13px; margin-bottom: 8px;">
+                        Identifies abuse of the Windows Startup folder by detecting elevated persistence indicators combined with a high count of LNK (shortcut) files. Dropping malicious shortcuts or executables in the Startup folder ensures automatic execution on every user logon, providing a simple but effective persistence mechanism frequently used by commodity malware.
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted);">
+                        <span>Confidence</span>
+                        <span>96%</span>
+                    </div>
+                    <div class="confidence-bar">
+                        <div class="confidence-fill" style="width: 96.04%; background: var(--accent-red);"></div>
+                    </div>
+                </div>
+            
+
+                <div class="technique-card">
+                    <div class="technique-header">
+                        <div>
+                            <div class="technique-name">Data Encrypted for Impact</div>
+                            <div class="technique-tactic">Impact</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div class="technique-id">T1486</div>
+                            <span class="badge badge-critical">Critical</span>
+                        </div>
+                    </div>
+                    <div style="color: var(--text-secondary); font-size: 13px; margin-bottom: 8px;">
+                        Identifies suspicious burst patterns in file creation activity. File creation bursts may indicate malware deployment, payload extraction, archive decompression attacks, or automated tool installation. Rapid file creation concentrated in short time windows is unusual for normal user activity and warrants investigation.
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted);">
+                        <span>Confidence</span>
+                        <span>97%</span>
+                    </div>
+                    <div class="confidence-bar">
+                        <div class="confidence-fill" style="width: 96.89%; background: var(--accent-red);"></div>
+                    </div>
+                </div>
+            
+
+                <div class="technique-card">
+                    <div class="technique-header">
+                        <div>
+                            <div class="technique-name">Data Manipulation</div>
+                            <div class="technique-tactic">Impact</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div class="technique-id">T1565</div>
+                            <span class="badge badge-critical">Critical</span>
+                        </div>
+                    </div>
+                    <div style="color: var(--text-secondary); font-size: 13px; margin-bottom: 8px;">
+                        Detects an unusually high number of file modification bursts. Burst modification patterns can indicate ransomware encrypting files in rapid succession, data manipulation attacks, or anti-forensics timestamp manipulation. The concentration of modifications in short time windows distinguishes malicious activity from normal file system operations.
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted);">
+                        <span>Confidence</span>
+                        <span>95%</span>
+                    </div>
+                    <div class="confidence-bar">
+                        <div class="confidence-fill" style="width: 94.89%; background: var(--accent-red);"></div>
+                    </div>
+                </div>
+            
+
+                <div class="technique-card">
+                    <div class="technique-header">
+                        <div>
+                            <div class="technique-name">Command and Scripting Interpreter</div>
+                            <div class="technique-tactic">Execution</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div class="technique-id">T1059</div>
+                            <span class="badge badge-critical">Critical</span>
+                        </div>
+                    </div>
+                    <div style="color: var(--text-secondary); font-size: 13px; margin-bottom: 8px;">
+                        Detects scripts located in suspicious directories combined with an elevated total script count. Scripts in directories like Temp, AppData, or ProgramData may indicate fileless malware delivery, attacker post-exploitation tools, or automated malicious activity using PowerShell, batch, VBScript, or JavaScript.
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted);">
+                        <span>Confidence</span>
+                        <span>99%</span>
+                    </div>
+                    <div class="confidence-bar">
+                        <div class="confidence-fill" style="width: 98.89%; background: var(--accent-red);"></div>
+                    </div>
+                </div>
+            
+
+                <div class="technique-card">
+                    <div class="technique-header">
+                        <div>
+                            <div class="technique-name">User Execution</div>
+                            <div class="technique-tactic">Execution</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div class="technique-id">T1204</div>
+                            <span class="badge badge-critical">Critical</span>
+                        </div>
+                    </div>
+                    <div style="color: var(--text-secondary); font-size: 13px; margin-bottom: 8px;">
+                        Detects a combination of executables in temporary directories with elevated temporary file counts, strongly suggesting malware staging in temp folders. This is a more specific indicator than general temp executables, as the combination with high temp file counts suggests active malware that is creating working files alongside its payload.
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted);">
+                        <span>Confidence</span>
+                        <span>100%</span>
+                    </div>
+                    <div class="confidence-bar">
+                        <div class="confidence-fill" style="width: 100.0%; background: var(--accent-red);"></div>
+                    </div>
+                </div>
+            
+
+                <div class="technique-card">
+                    <div class="technique-header">
+                        <div>
+                            <div class="technique-name">Scheduled Task/Job</div>
+                            <div class="technique-tactic">Execution</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div class="technique-id">T1053</div>
+                            <span class="badge badge-medium">Medium</span>
+                        </div>
+                    </div>
+                    <div style="color: var(--text-secondary); font-size: 13px; margin-bottom: 8px;">
+                        Detects abnormally high filesystem activity during nighttime and weekend hours. While some systems operate around the clock, elevated ratios of night and weekend activity on user workstations are a strong indicator of automated malicious activity, scheduled task abuse, or attacker operations timed to avoid detection during normal business hours.
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted);">
+                        <span>Confidence</span>
+                        <span>77%</span>
+                    </div>
+                    <div class="confidence-bar">
+                        <div class="confidence-fill" style="width: 76.73%; background: var(--accent-orange);"></div>
+                    </div>
+                </div>
+            
+            </div>
+        </div>
+
+        <!-- 7. Indicators of Compromise -->
+        <div class="section">
+            <div class="section-header">
+                <div class="section-number">7</div>
+                <div class="section-title">Indicators of Compromise</div>
+            </div>
+            <div class="section-body">
+                
+                <div class="ioc-item">
+                    <span class="ioc-type">Executable</span>
+                    <span class="ioc-value">276</span>
+                </div>
+            
+
+                <div class="ioc-item">
+                    <span class="ioc-type">Executable</span>
+                    <span class="ioc-value">37</span>
+                </div>
+            
+
+                <div class="ioc-item">
+                    <span class="ioc-type">Executable</span>
+                    <span class="ioc-value">680</span>
+                </div>
+            
+
+                <div class="ioc-item">
+                    <span class="ioc-type">File</span>
+                    <span class="ioc-value">30584</span>
+                </div>
+            
+
+                <div class="ioc-item">
+                    <span class="ioc-type">File</span>
+                    <span class="ioc-value">189</span>
+                </div>
+            
+
+                <div class="ioc-item">
+                    <span class="ioc-type">Registry</span>
+                    <span class="ioc-value">10146</span>
+                </div>
+            
+
+                <div class="ioc-item">
+                    <span class="ioc-type">Registry</span>
+                    <span class="ioc-value">326</span>
+                </div>
+            
+
+                <div class="ioc-item">
+                    <span class="ioc-type">Risk Flag</span>
+                    <span class="ioc-value">[!] Executables in Temp: 276</span>
+                </div>
+            
+
+                <div class="ioc-item">
+                    <span class="ioc-type">Risk Flag</span>
+                    <span class="ioc-value">[!] Double extension files: 30584</span>
+                </div>
+            
+
+                <div class="ioc-item">
+                    <span class="ioc-type">Risk Flag</span>
+                    <span class="ioc-value">[!] Creation bursts detected: 99</span>
+                </div>
+            
+
+                <div class="ioc-item">
+                    <span class="ioc-type">Risk Flag</span>
+                    <span class="ioc-value">[!] High persistence indicator count: 10146</span>
+                </div>
+            
+
+                <div class="ioc-item">
+                    <span class="ioc-type">Risk Flag</span>
+                    <span class="ioc-value">[!] Scripts in suspicious dirs: 189</span>
+                </div>
+            
+
+                <div class="ioc-item">
+                    <span class="ioc-type">File</span>
+                    <span class="ioc-value">NTFS</span>
+                </div>
+            
+            </div>
+        </div>
+
+        <!-- 8. Timeline Summary -->
+        <div class="section">
+            <div class="section-header">
+                <div class="section-number">8</div>
+                <div class="section-title">Timeline Summary</div>
+            </div>
+            <div class="section-body">
+                
+                <div class="timeline-entry">
+                    <div class="timeline-time">2001-01-01T00:00:00+00:00</div>
+                    <div class="timeline-desc">Earliest file activity detected</div>
+                </div>
+            
+
+                <div class="timeline-entry">
+                    <div class="timeline-time">2026-06-22T19:28:46+00:00</div>
+                    <div class="timeline-desc">Latest file activity detected</div>
+                </div>
+            
+
+                <div class="timeline-entry">
+                    <div class="timeline-time">Duration</div>
+                    <div class="timeline-desc">Activity spans 9,303 days (803,849,326 seconds)</div>
+                </div>
+            
+
+                <div class="timeline-entry">
+                    <div class="timeline-time">Burst Pattern</div>
+                    <div class="timeline-desc">99 file creation bursts detected (possible staging or deployment)</div>
+                </div>
+            
+
+                <div class="timeline-entry">
+                    <div class="timeline-time">Burst Pattern</div>
+                    <div class="timeline-desc">356 file modification bursts detected</div>
+                </div>
+            
+
+                <div class="timeline-entry">
+                    <div class="timeline-time">Peak Activity</div>
+                    <div class="timeline-desc">Peak activity at hour 23:00, day: Sun</div>
+                </div>
+            
+
+                <div class="timeline-entry">
+                    <div class="timeline-time">2026-06-29T18:50:04.862026+00:00</div>
+                    <div class="timeline-desc">AI prediction engine executed</div>
+                </div>
+            
+
+                <div class="timeline-entry">
+                    <div class="timeline-time">2026-06-30T11:49:49.723141+00:00</div>
+                    <div class="timeline-desc">MITRE ATT&amp;CK mapping and report generation completed</div>
+                </div>
+            
+            </div>
+        </div>
+
+        <!-- 9. Recommendations -->
+        <div class="section">
+            <div class="section-header">
+                <div class="section-number">9</div>
+                <div class="section-title">Recommendations</div>
+            </div>
+            <div class="section-body">
+                
+                <div style="margin-bottom: 24px; padding: 16px; background: var(--bg-secondary); border-radius: 10px;">
+                    <div style="font-weight: 600; margin-bottom: 12px; color: var(--accent-cyan);">
+                        Priority 1 — T1204
+                    </div>
+            
+
+                    <div class="rec-category">
+                        <div class="rec-category-title">Containment</div>
+                
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Quarantine identified malicious executables</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Block execution of suspicious scripts</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Isolate host from network</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Disable compromised accounts</span>
+                        </div>
+                    
+</div>
+
+                    <div class="rec-category">
+                        <div class="rec-category-title">Evidence Preservation</div>
+                
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Acquire copies of malicious files before quarantine</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Preserve command-line audit logs</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Acquire forensic images of affected media</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Preserve volatile evidence (memory, network state)</span>
+                        </div>
+                    
+</div>
+
+                    <div class="rec-category">
+                        <div class="rec-category-title">Collection Steps</div>
+                
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Collect process execution history from Sysmon/ETW</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Analyze command-line arguments of suspicious processes</span>
+                        </div>
+                    
+</div>
+
+                    <div class="rec-category">
+                        <div class="rec-category-title">Further Investigation</div>
+                
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Submit executables to sandbox for dynamic analysis</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Correlate execution times with other lateral movement</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Correlate findings with SIEM logs</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Check for additional indicators of compromise (IOCs)</span>
+                        </div>
+                    
+</div>
+</div>
+
+                <div style="margin-bottom: 24px; padding: 16px; background: var(--bg-secondary); border-radius: 10px;">
+                    <div style="font-weight: 600; margin-bottom: 12px; color: var(--accent-cyan);">
+                        Priority 2 — T1036.007
+                    </div>
+            
+
+                    <div class="rec-category">
+                        <div class="rec-category-title">Containment</div>
+                
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Re-enable tampered security controls</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Restore modified audit configurations</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Isolate host from network</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Disable compromised accounts</span>
+                        </div>
+                    
+</div>
+
+                    <div class="rec-category">
+                        <div class="rec-category-title">Evidence Preservation</div>
+                
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Preserve unaltered copies of tampered logs</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Capture hidden artifacts before remediation</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Acquire forensic images of affected media</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Preserve volatile evidence (memory, network state)</span>
+                        </div>
+                    
+</div>
+
+                    <div class="rec-category">
+                        <div class="rec-category-title">Collection Steps</div>
+                
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Check for log clearing events (Event ID 1102/104)</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Inspect hidden files, ADS, and packed binaries</span>
+                        </div>
+                    
+</div>
+
+                    <div class="rec-category">
+                        <div class="rec-category-title">Further Investigation</div>
+                
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Analyze timestomped files for true creation dates</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Check for process hollowing or DLL side-loading</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Correlate findings with SIEM logs</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Check for additional indicators of compromise (IOCs)</span>
+                        </div>
+                    
+</div>
+</div>
+
+                <div style="margin-bottom: 24px; padding: 16px; background: var(--bg-secondary); border-radius: 10px;">
+                    <div style="font-weight: 600; margin-bottom: 12px; color: var(--accent-cyan);">
+                        Priority 3 — T1547
+                    </div>
+            
+
+                    <div class="rec-category">
+                        <div class="rec-category-title">Containment</div>
+                
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Disable identified persistence mechanisms</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Remove suspicious startup entries and scheduled tasks</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Isolate host from network</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Disable compromised accounts</span>
+                        </div>
+                    
+</div>
+
+                    <div class="rec-category">
+                        <div class="rec-category-title">Evidence Preservation</div>
+                
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Export registry hives for offline analysis</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Snapshot current startup configuration</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Acquire forensic images of affected media</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Preserve volatile evidence (memory, network state)</span>
+                        </div>
+                    
+</div>
+
+                    <div class="rec-category">
+                        <div class="rec-category-title">Collection Steps</div>
+                
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Collect autoruns output from affected host</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Enumerate scheduled tasks and services</span>
+                        </div>
+                    
+</div>
+
+                    <div class="rec-category">
+                        <div class="rec-category-title">Further Investigation</div>
+                
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Inspect registry run keys and startup folders</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Check for backdoor implants in service binaries</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Correlate findings with SIEM logs</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Check for additional indicators of compromise (IOCs)</span>
+                        </div>
+                    
+</div>
+</div>
+
+                <div style="margin-bottom: 24px; padding: 16px; background: var(--bg-secondary); border-radius: 10px;">
+                    <div style="font-weight: 600; margin-bottom: 12px; color: var(--accent-cyan);">
+                        Priority 4 — T1547.001
+                    </div>
+            
+
+                    <div class="rec-category">
+                        <div class="rec-category-title">Containment</div>
+                
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Disable identified persistence mechanisms</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Remove suspicious startup entries and scheduled tasks</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Isolate host from network</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Disable compromised accounts</span>
+                        </div>
+                    
+</div>
+
+                    <div class="rec-category">
+                        <div class="rec-category-title">Evidence Preservation</div>
+                
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Export registry hives for offline analysis</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Snapshot current startup configuration</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Acquire forensic images of affected media</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Preserve volatile evidence (memory, network state)</span>
+                        </div>
+                    
+</div>
+
+                    <div class="rec-category">
+                        <div class="rec-category-title">Collection Steps</div>
+                
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Collect autoruns output from affected host</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Enumerate scheduled tasks and services</span>
+                        </div>
+                    
+</div>
+
+                    <div class="rec-category">
+                        <div class="rec-category-title">Further Investigation</div>
+                
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Inspect registry run keys and startup folders</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Check for backdoor implants in service binaries</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Correlate findings with SIEM logs</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Check for additional indicators of compromise (IOCs)</span>
+                        </div>
+                    
+</div>
+</div>
+
+                <div style="margin-bottom: 24px; padding: 16px; background: var(--bg-secondary); border-radius: 10px;">
+                    <div style="font-weight: 600; margin-bottom: 12px; color: var(--accent-cyan);">
+                        Priority 5 — T1486
+                    </div>
+            
+
+                    <div class="rec-category">
+                        <div class="rec-category-title">Containment</div>
+                
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Disconnect affected systems from production network</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Halt identified destructive processes</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Isolate host from network</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Disable compromised accounts</span>
+                        </div>
+                    
+</div>
+
+                    <div class="rec-category">
+                        <div class="rec-category-title">Evidence Preservation</div>
+                
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Acquire forensic images of affected drives</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Preserve any ransom notes or attacker communications</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Acquire forensic images of affected media</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Preserve volatile evidence (memory, network state)</span>
+                        </div>
+                    
+</div>
+
+                    <div class="rec-category">
+                        <div class="rec-category-title">Collection Steps</div>
+                
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Assess extent of data destruction or encryption</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Verify backup integrity for affected systems</span>
+                        </div>
+                    
+</div>
+
+                    <div class="rec-category">
+                        <div class="rec-category-title">Further Investigation</div>
+                
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Determine if data exfiltration preceded destruction</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Analyze malware for decryption possibilities</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Correlate findings with SIEM logs</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Check for additional indicators of compromise (IOCs)</span>
+                        </div>
+                    
+</div>
+</div>
+
+                <div style="margin-bottom: 24px; padding: 16px; background: var(--bg-secondary); border-radius: 10px;">
+                    <div style="font-weight: 600; margin-bottom: 12px; color: var(--accent-cyan);">
+                        Priority 6 — T1565
+                    </div>
+            
+
+                    <div class="rec-category">
+                        <div class="rec-category-title">Containment</div>
+                
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Disconnect affected systems from production network</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Halt identified destructive processes</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Isolate host from network</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Disable compromised accounts</span>
+                        </div>
+                    
+</div>
+
+                    <div class="rec-category">
+                        <div class="rec-category-title">Evidence Preservation</div>
+                
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Acquire forensic images of affected drives</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Preserve any ransom notes or attacker communications</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Acquire forensic images of affected media</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Preserve volatile evidence (memory, network state)</span>
+                        </div>
+                    
+</div>
+
+                    <div class="rec-category">
+                        <div class="rec-category-title">Collection Steps</div>
+                
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Assess extent of data destruction or encryption</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Verify backup integrity for affected systems</span>
+                        </div>
+                    
+</div>
+
+                    <div class="rec-category">
+                        <div class="rec-category-title">Further Investigation</div>
+                
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Determine if data exfiltration preceded destruction</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Analyze malware for decryption possibilities</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Correlate findings with SIEM logs</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Check for additional indicators of compromise (IOCs)</span>
+                        </div>
+                    
+</div>
+</div>
+
+                <div style="margin-bottom: 24px; padding: 16px; background: var(--bg-secondary); border-radius: 10px;">
+                    <div style="font-weight: 600; margin-bottom: 12px; color: var(--accent-cyan);">
+                        Priority 7 — T1059
+                    </div>
+            
+
+                    <div class="rec-category">
+                        <div class="rec-category-title">Containment</div>
+                
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Quarantine identified malicious executables</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Block execution of suspicious scripts</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Isolate host from network</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Disable compromised accounts</span>
+                        </div>
+                    
+</div>
+
+                    <div class="rec-category">
+                        <div class="rec-category-title">Evidence Preservation</div>
+                
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Acquire copies of malicious files before quarantine</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Preserve command-line audit logs</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Acquire forensic images of affected media</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Preserve volatile evidence (memory, network state)</span>
+                        </div>
+                    
+</div>
+
+                    <div class="rec-category">
+                        <div class="rec-category-title">Collection Steps</div>
+                
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Collect process execution history from Sysmon/ETW</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Analyze command-line arguments of suspicious processes</span>
+                        </div>
+                    
+</div>
+
+                    <div class="rec-category">
+                        <div class="rec-category-title">Further Investigation</div>
+                
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Submit executables to sandbox for dynamic analysis</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Correlate execution times with other lateral movement</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Correlate findings with SIEM logs</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Check for additional indicators of compromise (IOCs)</span>
+                        </div>
+                    
+</div>
+</div>
+
+                <div style="margin-bottom: 24px; padding: 16px; background: var(--bg-secondary); border-radius: 10px;">
+                    <div style="font-weight: 600; margin-bottom: 12px; color: var(--accent-cyan);">
+                        Priority 8 — T1204
+                    </div>
+            
+
+                    <div class="rec-category">
+                        <div class="rec-category-title">Containment</div>
+                
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Quarantine identified malicious executables</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Block execution of suspicious scripts</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Isolate host from network</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Disable compromised accounts</span>
+                        </div>
+                    
+</div>
+
+                    <div class="rec-category">
+                        <div class="rec-category-title">Evidence Preservation</div>
+                
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Acquire copies of malicious files before quarantine</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Preserve command-line audit logs</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Acquire forensic images of affected media</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Preserve volatile evidence (memory, network state)</span>
+                        </div>
+                    
+</div>
+
+                    <div class="rec-category">
+                        <div class="rec-category-title">Collection Steps</div>
+                
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Collect process execution history from Sysmon/ETW</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Analyze command-line arguments of suspicious processes</span>
+                        </div>
+                    
+</div>
+
+                    <div class="rec-category">
+                        <div class="rec-category-title">Further Investigation</div>
+                
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Submit executables to sandbox for dynamic analysis</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Correlate execution times with other lateral movement</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Correlate findings with SIEM logs</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Check for additional indicators of compromise (IOCs)</span>
+                        </div>
+                    
+</div>
+</div>
+
+                <div style="margin-bottom: 24px; padding: 16px; background: var(--bg-secondary); border-radius: 10px;">
+                    <div style="font-weight: 600; margin-bottom: 12px; color: var(--accent-cyan);">
+                        Priority 9 — T1204.002
+                    </div>
+            
+
+                    <div class="rec-category">
+                        <div class="rec-category-title">Containment</div>
+                
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Quarantine identified malicious executables</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Block execution of suspicious scripts</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Isolate host from network</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Disable compromised accounts</span>
+                        </div>
+                    
+</div>
+
+                    <div class="rec-category">
+                        <div class="rec-category-title">Evidence Preservation</div>
+                
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Acquire copies of malicious files before quarantine</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Preserve command-line audit logs</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Acquire forensic images of affected media</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Preserve volatile evidence (memory, network state)</span>
+                        </div>
+                    
+</div>
+
+                    <div class="rec-category">
+                        <div class="rec-category-title">Collection Steps</div>
+                
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Collect process execution history from Sysmon/ETW</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Analyze command-line arguments of suspicious processes</span>
+                        </div>
+                    
+</div>
+
+                    <div class="rec-category">
+                        <div class="rec-category-title">Further Investigation</div>
+                
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Submit executables to sandbox for dynamic analysis</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Correlate execution times with other lateral movement</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Correlate findings with SIEM logs</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Check for additional indicators of compromise (IOCs)</span>
+                        </div>
+                    
+</div>
+</div>
+
+                <div style="margin-bottom: 24px; padding: 16px; background: var(--bg-secondary); border-radius: 10px;">
+                    <div style="font-weight: 600; margin-bottom: 12px; color: var(--accent-cyan);">
+                        Priority 10 — T1204
+                    </div>
+            
+
+                    <div class="rec-category">
+                        <div class="rec-category-title">Containment</div>
+                
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Quarantine identified malicious executables</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Block execution of suspicious scripts</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Isolate host from network</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Disable compromised accounts</span>
+                        </div>
+                    
+</div>
+
+                    <div class="rec-category">
+                        <div class="rec-category-title">Evidence Preservation</div>
+                
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Acquire copies of malicious files before quarantine</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Preserve command-line audit logs</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Acquire forensic images of affected media</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Preserve volatile evidence (memory, network state)</span>
+                        </div>
+                    
+</div>
+
+                    <div class="rec-category">
+                        <div class="rec-category-title">Collection Steps</div>
+                
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Collect process execution history from Sysmon/ETW</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Analyze command-line arguments of suspicious processes</span>
+                        </div>
+                    
+</div>
+
+                    <div class="rec-category">
+                        <div class="rec-category-title">Further Investigation</div>
+                
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Submit executables to sandbox for dynamic analysis</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Correlate execution times with other lateral movement</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Correlate findings with SIEM logs</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Check for additional indicators of compromise (IOCs)</span>
+                        </div>
+                    
+</div>
+</div>
+
+                <div style="margin-bottom: 24px; padding: 16px; background: var(--bg-secondary); border-radius: 10px;">
+                    <div style="font-weight: 600; margin-bottom: 12px; color: var(--accent-cyan);">
+                        Priority 11 — T1053
+                    </div>
+            
+
+                    <div class="rec-category">
+                        <div class="rec-category-title">Containment</div>
+                
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Quarantine identified malicious executables</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Block execution of suspicious scripts</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Isolate host from network</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Disable compromised accounts</span>
+                        </div>
+                    
+</div>
+
+                    <div class="rec-category">
+                        <div class="rec-category-title">Evidence Preservation</div>
+                
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Acquire copies of malicious files before quarantine</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Preserve command-line audit logs</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Acquire forensic images of affected media</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Preserve volatile evidence (memory, network state)</span>
+                        </div>
+                    
+</div>
+
+                    <div class="rec-category">
+                        <div class="rec-category-title">Collection Steps</div>
+                
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Collect process execution history from Sysmon/ETW</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Analyze command-line arguments of suspicious processes</span>
+                        </div>
+                    
+</div>
+
+                    <div class="rec-category">
+                        <div class="rec-category-title">Further Investigation</div>
+                
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Submit executables to sandbox for dynamic analysis</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Correlate execution times with other lateral movement</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Correlate findings with SIEM logs</span>
+                        </div>
+                    
+
+                        <div class="rec-item">
+                            <span class="rec-bullet">▸</span>
+                            <span>Check for additional indicators of compromise (IOCs)</span>
+                        </div>
+                    
+</div>
+</div>
+            </div>
+        </div>
+
+        <!-- 10. Conclusion -->
+        <div class="section">
+            <div class="section-header">
+                <div class="section-number">10</div>
+                <div class="section-title">Conclusion</div>
+            </div>
+            <div class="section-body">
+                <div class="conclusion">
+                    <p>Based on the automated analysis of disk forensic evidence, this case exhibits <strong>anomalous activity</strong> consistent with potential malicious behavior. The AI model detected significant deviations from baseline patterns, and 11 MITRE ATT&CK techniques were identified in the evidence.</p><p>The risk assessment is <strong>CRITICAL</strong>. Immediate containment actions are recommended. All volatile evidence should be preserved before any remediation steps are taken. A manual review by a qualified forensic analyst is strongly advised to confirm these automated findings.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="report-footer">
+            <p>Report generated automatically by the Digital Forensics AI Platform — MITRE ATT&CK Mapping Engine v1.0</p>
+            <p>Generated on: 2026-06-30T11:49:49.723141+00:00</p>
+        </div>
+
+    </div>
+</body>
+</html>

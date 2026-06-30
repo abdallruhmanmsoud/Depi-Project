@@ -1,0 +1,90 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Memory Case Schema",
+  "description": "Master schema representing a complete normalized memory forensics case. Aggregates all Volatility plugin outputs into a single structured document for AI consumption.",
+  "type": "object",
+  "properties": {
+    "case_id": {
+      "type": "string",
+      "description": "Unique identifier for this forensic case"
+    },
+    "memory_image": {
+      "type": "string",
+      "description": "Path or name of the original memory dump file"
+    },
+    "acquisition_date": {
+      "type": "string",
+      "description": "Date the memory dump was acquired (ISO 8601)"
+    },
+    "analysis_date": {
+      "type": "string",
+      "description": "Date the analysis was performed (ISO 8601)"
+    },
+    "processes": {
+      "type": "array",
+      "description": "List of processes from pslist (see process_schema.json)",
+      "items": { "$ref": "process_schema.json" }
+    },
+    "cmdlines": {
+      "type": "array",
+      "description": "List of command lines from cmdline (see cmdline_schema.json)",
+      "items": { "$ref": "cmdline_schema.json" }
+    },
+    "dlls": {
+      "type": "array",
+      "description": "List of loaded DLLs from dlllist (see dll_schema.json)",
+      "items": { "$ref": "dll_schema.json" }
+    },
+    "privileges": {
+      "type": "array",
+      "description": "List of process privileges from privs (see privilege_schema.json)",
+      "items": { "$ref": "privilege_schema.json" }
+    },
+    "handles": {
+      "type": "array",
+      "description": "List of handles from handles (see handle_schema.json)",
+      "items": { "$ref": "handle_schema.json" }
+    },
+    "connections": {
+      "type": "array",
+      "description": "List of network connections from netscan (see network_schema.json)",
+      "items": { "$ref": "network_schema.json" }
+    },
+    "malfind_hits": {
+      "type": "array",
+      "description": "List of suspicious memory regions from malfind (see malfind_schema.json)",
+      "items": { "$ref": "malfind_schema.json" }
+    },
+    "statistics": {
+      "type": "object",
+      "description": "Summary statistics for quick reference",
+      "properties": {
+        "process_count": {
+          "type": "integer",
+          "description": "Total number of processes"
+        },
+        "dll_count": {
+          "type": "integer",
+          "description": "Total number of loaded DLLs"
+        },
+        "handle_count": {
+          "type": "integer",
+          "description": "Total number of handles"
+        },
+        "privilege_count": {
+          "type": "integer",
+          "description": "Total number of privileges"
+        },
+        "connection_count": {
+          "type": "integer",
+          "description": "Total number of network connections"
+        },
+        "malfind_count": {
+          "type": "integer",
+          "description": "Total number of malfind hits"
+        }
+      }
+    }
+  },
+  "required": ["case_id", "processes"]
+}

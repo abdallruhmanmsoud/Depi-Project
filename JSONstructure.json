@@ -1,0 +1,31 @@
+{
+  "meta": {
+    "image_file": "C:\\path\\Triage-Memory.mem",
+    "sha256": "a18602964a...",
+    "volatility_version": 3,
+    "volatility_binary": "vol.py",
+    "profile": "Win7SP1x64",
+    "detected_profiles": ["Win7SP1x64"],
+    "analysis_date": "2026-03-09T22:10:25",
+    "plugins_requested": 27,
+    "plugins_completed": 27,
+    "plugins_ok": 25,
+    "plugins_warned": 2,
+    "plugins_errored": 0
+  },
+  "plugins": {
+    "pslist": {
+      "display": "Process List",
+      "command": "python3 vol.py -f memory.mem windows.pslist.PsList",
+      "status": "ok",
+      "returncode": 0,
+      "elapsed_sec": 14.3,
+      "output_file": "output_dir\\pslist.txt",
+      "error": null,
+      "output": "PID  PPID  ImageFileName ...\n1234 ...",
+      "stderr": ""
+    },
+    "malfind": { ... },
+    ...
+  }
+}

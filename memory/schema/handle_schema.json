@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Handle Schema",
+  "description": "Schema for normalized Volatility handles output. Each object represents a single handle opened by a process.",
+  "type": "object",
+  "properties": {
+    "pid": {
+      "type": "integer",
+      "description": "Process ID"
+    },
+    "process": {
+      "type": "string",
+      "description": "Process name"
+    },
+    "offset": {
+      "type": "string",
+      "description": "Handle table entry offset"
+    },
+    "handle_value": {
+      "type": "string",
+      "description": "Handle value (hex)"
+    },
+    "type": {
+      "type": "string",
+      "description": "Object type (e.g., Process, Thread, File, Key, Mutant)"
+    },
+    "granted_access": {
+      "type": "string",
+      "description": "Granted access rights (hex)"
+    },
+    "name": {
+      "type": "string",
+      "description": "Name of the referenced object"
+    }
+  },
+  "required": ["pid", "process", "type"]
+}

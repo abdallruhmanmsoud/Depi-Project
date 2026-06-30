@@ -1,0 +1,5 @@
+case_id,label
+DESKTOP-88S7USO-20260616-144313_forensics_20260616_120619,suspicious
+MemoryDump_forensics_20260616_083039,safe
+Win11Dump_runner_20260622_080128,safe
+Windows 10 x64-043303df_runner_20260622_070714,safe

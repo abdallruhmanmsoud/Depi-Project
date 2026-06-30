@@ -1,0 +1,834 @@
+{
+  "report_version": "1.0.0",
+  "case_information": {
+    "case_id": "CASE-20260630_114753",
+    "category": "disk",
+    "tool": "E:\\Big_Project\\DEPI-Project",
+    "analysis_date": "2026-06-30T11:49:49.723141+00:00",
+    "processing_time": "57.49 ms"
+  },
+  "ai_assessment": {
+    "prediction": "MALICIOUS",
+    "risk_level": "CRITICAL",
+    "anomaly_score": 0.694303,
+    "confidence": 0.9403,
+    "interpretation": "CRITICAL — Highly Anomalous"
+  },
+  "evidence_summary": [
+    {
+      "rank": 1,
+      "level": "critical",
+      "title": "AI Verdict: Anomalous Activity Detected",
+      "detail": "The Isolation Forest model classified this case as MALICIOUS with an anomaly score of 0.6943. Higher anomaly scores indicate greater deviation from normal patterns."
+    },
+    {
+      "rank": 2,
+      "level": "critical",
+      "title": "MITRE T1204: User Execution",
+      "detail": "Tactic: Execution. Confidence: 99%. Evidence: executables_in_temp > 10 (actual: 276)"
+    },
+    {
+      "rank": 3,
+      "level": "high",
+      "title": "MITRE T1204.002: User Execution: Malicious File",
+      "detail": "Tactic: Execution. Confidence: 83%. Evidence: executables_in_downloads > 20 (actual: 37)"
+    },
+    {
+      "rank": 4,
+      "level": "medium",
+      "title": "MITRE T1204: User Execution",
+      "detail": "Tactic: Execution. Confidence: 89%. Evidence: executables_on_desktop > 50 (actual: 680)"
+    },
+    {
+      "rank": 5,
+      "level": "critical",
+      "title": "MITRE T1036.007: Masquerading: Double File Extension",
+      "detail": "Tactic: Defense Evasion. Confidence: 100%. Evidence: double_extension_count > 100 (actual: 30584)"
+    },
+    {
+      "rank": 6,
+      "level": "critical",
+      "title": "MITRE T1547: Boot or Logon Autostart Execution",
+      "detail": "Tactic: Persistence. Confidence: 100%. Evidence: persistence_indicators > 100 (actual: 10146)"
+    }
+  ],
+  "feature_highlights": [
+    {
+      "feature": "double_extension_count",
+      "label": "Double-extension files",
+      "value": 30584.0,
+      "threshold": 100,
+      "ratio": 305.84,
+      "significance": "CRITICAL"
+    },
+    {
+      "feature": "persistence_indicators",
+      "label": "Persistence indicators",
+      "value": 10146.0,
+      "threshold": 100,
+      "ratio": 101.46,
+      "significance": "CRITICAL"
+    },
+    {
+      "feature": "execution_risk_score",
+      "label": "Execution risk score",
+      "value": 467414.4,
+      "threshold": 10000,
+      "ratio": 46.74,
+      "significance": "CRITICAL"
+    },
+    {
+      "feature": "scripts_in_suspicious_dirs",
+      "label": "Scripts in suspicious dirs",
+      "value": 189.0,
+      "threshold": 5,
+      "ratio": 37.8,
+      "significance": "CRITICAL"
+    },
+    {
+      "feature": "executables_in_temp",
+      "label": "Executables in Temp",
+      "value": 276.0,
+      "threshold": 10,
+      "ratio": 27.6,
+      "significance": "CRITICAL"
+    },
+    {
+      "feature": "executables_on_desktop",
+      "label": "Executables on Desktop",
+      "value": 680.0,
+      "threshold": 50,
+      "ratio": 13.6,
+      "significance": "CRITICAL"
+    },
+    {
+      "feature": "persistence_score",
+      "label": "Persistence score",
+      "value": 52894.0,
+      "threshold": 5000,
+      "ratio": 10.58,
+      "significance": "CRITICAL"
+    },
+    {
+      "feature": "overall_disk_risk_score",
+      "label": "Overall disk risk score",
+      "value": 548511.106,
+      "threshold": 100000,
+      "ratio": 5.49,
+      "significance": "CRITICAL"
+    },
+    {
+      "feature": "creation_bursts",
+      "label": "File creation bursts",
+      "value": 99.0,
+      "threshold": 20,
+      "ratio": 4.95,
+      "significance": "HIGH"
+    },
+    {
+      "feature": "executables_in_downloads",
+      "label": "Executables in Downloads",
+      "value": 37.0,
+      "threshold": 20,
+      "ratio": 1.85,
+      "significance": "ELEVATED"
+    },
+    {
+      "feature": "night_activity_ratio",
+      "label": "Night activity ratio",
+      "value": 0.702182,
+      "threshold": 0.5,
+      "ratio": 1.4,
+      "significance": "ELEVATED"
+    }
+  ],
+  "mitre_mapping": {
+    "techniques_matched": 11,
+    "techniques": [
+      {
+        "rule_id": "DISK-001",
+        "id": "T1204",
+        "name": "User Execution",
+        "tactic": "Execution",
+        "confidence": 0.9889,
+        "severity": "Critical",
+        "description": "Detects executable files located in temporary directories, a common indicator of malware staging. Threat actors frequently drop malicious executables in Temp directories because they are writable by default, rarely monitored, and provide a low-profile location for initial payload execution before establishing persistence.",
+        "matched_conditions": [
+          {
+            "feature": "executables_in_temp",
+            "operator": ">",
+            "expected": 10,
+            "actual": 276
+          }
+        ],
+        "recommendation": "Enumerate all executable files in temporary directories and compute file hashes for threat intelligence lookup. Check each executable's digital signature and verify against known-good software catalogs. Analyze file creation timestamps to establish a timeline of malware staging. Submit suspicious executables to a sandbox environment for dynamic analysis. Quarantine confirmed malicious files while preserving copies for evidence."
+      },
+      {
+        "rule_id": "DISK-002",
+        "id": "T1204.002",
+        "name": "User Execution: Malicious File",
+        "tactic": "Execution",
+        "confidence": 0.8314,
+        "severity": "High",
+        "description": "Identifies executable files in the Downloads directory, which may indicate user-downloaded malware, social engineering payloads, or drive-by download artifacts. While some executables in Downloads are legitimate, a high count combined with other indicators suggests systematic malware delivery targeting end users.",
+        "matched_conditions": [
+          {
+            "feature": "executables_in_downloads",
+            "operator": ">",
+            "expected": 20,
+            "actual": 37
+          }
+        ],
+        "recommendation": "List all executables in the Downloads directory with file hashes, sizes, and timestamps. Cross-reference with browser history to identify download sources. Verify digital signatures and check file hashes against VirusTotal and other threat intelligence databases. Analyze Zone.Identifier alternate data streams for URL origin information. Check for correlation with phishing email timestamps in the user's mailbox."
+      },
+      {
+        "rule_id": "DISK-003",
+        "id": "T1204",
+        "name": "User Execution",
+        "tactic": "Execution",
+        "confidence": 0.8889,
+        "severity": "Medium",
+        "description": "Detects a high count of executable files on the Desktop, which may indicate malware payloads placed for easy user execution, social engineering artifacts, or attacker tools staged on the Desktop for convenient access during an active compromise.",
+        "matched_conditions": [
+          {
+            "feature": "executables_on_desktop",
+            "operator": ">",
+            "expected": 50,
+            "actual": 680
+          }
+        ],
+        "recommendation": "Inventory all executable files on the Desktop and verify each against authorized software lists. Check for recently created executables with suspicious names or disguised icons. Analyze file metadata including embedded version information and digital signatures. Look for executables masquerading as documents or shortcuts. Review user activity logs to determine if the executables were deliberately placed or automatically created."
+      },
+      {
+        "rule_id": "DISK-004",
+        "id": "T1036.007",
+        "name": "Masquerading: Double File Extension",
+        "tactic": "Defense Evasion",
+        "confidence": 1.0,
+        "severity": "Critical",
+        "description": "Identifies files using double extensions (e.g., document.pdf.exe, invoice.docx.scr) which is a classic social engineering technique to disguise executable files as benign documents. Double extensions exploit the Windows default behavior of hiding known file extensions, making malicious executables appear to be safe document files.",
+        "matched_conditions": [
+          {
+            "feature": "double_extension_count",
+            "operator": ">",
+            "expected": 100,
+            "actual": 30584
+          }
+        ],
+        "recommendation": "List all files with double extensions and categorize by true file type. Prioritize files with executable final extensions (.exe, .scr, .bat, .cmd, .ps1, .vbs). Check file headers (magic bytes) to verify actual file type versus displayed extension. Hash all double-extension executables and query threat intelligence feeds. Investigate the directories containing these files and the timestamps of their creation. Alert users about the social engineering technique."
+      },
+      {
+        "rule_id": "DISK-007",
+        "id": "T1547",
+        "name": "Boot or Logon Autostart Execution",
+        "tactic": "Persistence",
+        "confidence": 1.0,
+        "severity": "Critical",
+        "description": "Detects a high count of persistence-related artifacts including startup entries, scheduled tasks, registry run keys, and service installations. An elevated persistence indicator count suggests that malware or an attacker has established multiple persistence mechanisms to survive system reboots and maintain access to the compromised system.",
+        "matched_conditions": [
+          {
+            "feature": "persistence_indicators",
+            "operator": ">",
+            "expected": 100,
+            "actual": 10146
+          }
+        ],
+        "recommendation": "Analyze all identified persistence artifacts to determine which are legitimate and which are malicious. Inspect startup folders, registry run keys, scheduled tasks, services, and WMI subscriptions. Cross-reference persistence mechanisms with known malware families. Document each persistence artifact with its location, associated executable, and creation timestamp. Remove confirmed malicious persistence entries while preserving evidence. Monitor for re-establishment of persistence after removal."
+      },
+      {
+        "rule_id": "DISK-008",
+        "id": "T1547.001",
+        "name": "Boot or Logon Autostart Execution: Registry Run Keys / Startup Folder",
+        "tactic": "Persistence",
+        "confidence": 0.9604,
+        "severity": "Critical",
+        "description": "Identifies abuse of the Windows Startup folder by detecting elevated persistence indicators combined with a high count of LNK (shortcut) files. Dropping malicious shortcuts or executables in the Startup folder ensures automatic execution on every user logon, providing a simple but effective persistence mechanism frequently used by commodity malware.",
+        "matched_conditions": [
+          {
+            "feature": "persistence_indicators",
+            "operator": ">",
+            "expected": 50,
+            "actual": 10146
+          },
+          {
+            "feature": "ext_lnk_count",
+            "operator": ">",
+            "expected": 100,
+            "actual": 326
+          }
+        ],
+        "recommendation": "Inspect all LNK files in Startup folders for both current user and all-users profiles. Parse LNK file metadata to identify target executables, command-line arguments, and working directories. Check for LNK files pointing to executables in temporary or unusual directories. Verify each Startup entry against authorized software. Analyze LNK creation timestamps to identify when persistence was established. Remove unauthorized entries and monitor for re-creation."
+      },
+      {
+        "rule_id": "DISK-010",
+        "id": "T1486",
+        "name": "Data Encrypted for Impact",
+        "tactic": "Impact",
+        "confidence": 0.9689,
+        "severity": "Critical",
+        "description": "Identifies suspicious burst patterns in file creation activity. File creation bursts may indicate malware deployment, payload extraction, archive decompression attacks, or automated tool installation. Rapid file creation concentrated in short time windows is unusual for normal user activity and warrants investigation.",
+        "matched_conditions": [
+          {
+            "feature": "creation_bursts",
+            "operator": ">",
+            "expected": 20,
+            "actual": 99
+          }
+        ],
+        "recommendation": "Analyze the timing and distribution of file creation bursts to identify distinct episodes. For each burst, examine the file types, directories, and naming patterns of created files. Check for correlation with malware execution timestamps. Investigate whether bursts correspond to legitimate software installations or automated processes. Look for encrypted file extensions that may indicate ransomware activity. Document burst patterns for timeline reconstruction."
+      },
+      {
+        "rule_id": "DISK-011",
+        "id": "T1565",
+        "name": "Data Manipulation",
+        "tactic": "Impact",
+        "confidence": 0.9489,
+        "severity": "Critical",
+        "description": "Detects an unusually high number of file modification bursts. Burst modification patterns can indicate ransomware encrypting files in rapid succession, data manipulation attacks, or anti-forensics timestamp manipulation. The concentration of modifications in short time windows distinguishes malicious activity from normal file system operations.",
+        "matched_conditions": [
+          {
+            "feature": "modification_bursts",
+            "operator": ">",
+            "expected": 50,
+            "actual": 356
+          }
+        ],
+        "recommendation": "Analyze file modification burst patterns to identify the specific time windows and affected directories. Check for file extension changes that may indicate ransomware encryption. Compare modified file headers against their extensions to detect content alteration. Look for ransom notes or attacker communications created during modification bursts. Verify whether modification patterns correspond to legitimate batch operations or software updates."
+      },
+      {
+        "rule_id": "DISK-014",
+        "id": "T1059",
+        "name": "Command and Scripting Interpreter",
+        "tactic": "Execution",
+        "confidence": 0.9889,
+        "severity": "Critical",
+        "description": "Detects scripts located in suspicious directories combined with an elevated total script count. Scripts in directories like Temp, AppData, or ProgramData may indicate fileless malware delivery, attacker post-exploitation tools, or automated malicious activity using PowerShell, batch, VBScript, or JavaScript.",
+        "matched_conditions": [
+          {
+            "feature": "scripts_in_suspicious_dirs",
+            "operator": ">",
+            "expected": 5,
+            "actual": 189
+          },
+          {
+            "feature": "script_file_count",
+            "operator": ">",
+            "expected": 100,
+            "actual": 3282
+          }
+        ],
+        "recommendation": "List all script files in suspicious directories with full paths, sizes, and timestamps. Analyze script content for obfuscation, encoded payloads, download cradles, or system reconnaissance commands. Check for scripts that spawn additional processes, modify registry, or establish network connections. Verify scripts against known legitimate automation and system management tools. Quarantine confirmed malicious scripts and trace their origin."
+      },
+      {
+        "rule_id": "DISK-016",
+        "id": "T1204",
+        "name": "User Execution",
+        "tactic": "Execution",
+        "confidence": 1.0,
+        "severity": "Critical",
+        "description": "Detects a combination of executables in temporary directories with elevated temporary file counts, strongly suggesting malware staging in temp folders. This is a more specific indicator than general temp executables, as the combination with high temp file counts suggests active malware that is creating working files alongside its payload.",
+        "matched_conditions": [
+          {
+            "feature": "executables_in_temp",
+            "operator": ">",
+            "expected": 50,
+            "actual": 276
+          },
+          {
+            "feature": "temp_file_count",
+            "operator": ">",
+            "expected": 50,
+            "actual": 141
+          }
+        ],
+        "recommendation": "Prioritize investigation of executables in Temp directories. Analyze associated temp files for malware working data, configuration files, or encrypted payloads. Check for parent-child relationships between temp executables and other processes. Monitor for new file creation in Temp directories indicating ongoing malicious activity. Hash and submit all temp executables for threat intelligence analysis. Clean confirmed malware from temp directories after evidence preservation."
+      },
+      {
+        "rule_id": "DISK-018",
+        "id": "T1053",
+        "name": "Scheduled Task/Job",
+        "tactic": "Execution",
+        "confidence": 0.7673,
+        "severity": "Medium",
+        "description": "Detects abnormally high filesystem activity during nighttime and weekend hours. While some systems operate around the clock, elevated ratios of night and weekend activity on user workstations are a strong indicator of automated malicious activity, scheduled task abuse, or attacker operations timed to avoid detection during normal business hours.",
+        "matched_conditions": [
+          {
+            "feature": "night_activity_ratio",
+            "operator": ">",
+            "expected": 0.5,
+            "actual": 0.702182
+          },
+          {
+            "feature": "weekend_activity_ratio",
+            "operator": ">",
+            "expected": 0.5,
+            "actual": 0.867393
+          }
+        ],
+        "recommendation": "Analyze the types of file operations occurring during off-hours periods. Identify processes and user accounts active during nighttime and weekend hours. Check for scheduled tasks or cron jobs that may be responsible for the off-hours activity. Determine if the system is a server (where off-hours activity may be normal) or a user workstation (where it is suspicious). Correlate off-hours activity with other security events to identify coordinated attack operations."
+      }
+    ],
+    "summary": {
+      "total_rules_evaluated": 18,
+      "total_rules_matched": 11,
+      "critical_count": 8,
+      "high_count": 1,
+      "medium_count": 2,
+      "low_count": 0,
+      "tactics_involved": [
+        "Execution",
+        "Defense Evasion",
+        "Persistence",
+        "Impact"
+      ]
+    }
+  },
+  "indicators_of_compromise": [
+    {
+      "type": "Executable",
+      "feature": "executables_in_temp",
+      "value": "276",
+      "detail": "executables_in_temp = 276"
+    },
+    {
+      "type": "Executable",
+      "feature": "executables_in_downloads",
+      "value": "37",
+      "detail": "executables_in_downloads = 37"
+    },
+    {
+      "type": "Executable",
+      "feature": "executables_on_desktop",
+      "value": "680",
+      "detail": "executables_on_desktop = 680"
+    },
+    {
+      "type": "File",
+      "feature": "double_extension_count",
+      "value": "30584",
+      "detail": "double_extension_count = 30584"
+    },
+    {
+      "type": "File",
+      "feature": "scripts_in_suspicious_dirs",
+      "value": "189",
+      "detail": "scripts_in_suspicious_dirs = 189"
+    },
+    {
+      "type": "Registry",
+      "feature": "persistence_indicators",
+      "value": "10146",
+      "detail": "persistence_indicators = 10146"
+    },
+    {
+      "type": "Registry",
+      "feature": "ext_lnk_count",
+      "value": "326",
+      "detail": "ext_lnk_count = 326"
+    },
+    {
+      "type": "Risk Flag",
+      "feature": "risk_flag",
+      "value": "[!] Executables in Temp: 276",
+      "detail": "[!] Executables in Temp: 276"
+    },
+    {
+      "type": "Risk Flag",
+      "feature": "risk_flag",
+      "value": "[!] Double extension files: 30584",
+      "detail": "[!] Double extension files: 30584"
+    },
+    {
+      "type": "Risk Flag",
+      "feature": "risk_flag",
+      "value": "[!] Creation bursts detected: 99",
+      "detail": "[!] Creation bursts detected: 99"
+    },
+    {
+      "type": "Risk Flag",
+      "feature": "risk_flag",
+      "value": "[!] High persistence indicator count: 10146",
+      "detail": "[!] High persistence indicator count: 10146"
+    },
+    {
+      "type": "Risk Flag",
+      "feature": "risk_flag",
+      "value": "[!] Scripts in suspicious dirs: 189",
+      "detail": "[!] Scripts in suspicious dirs: 189"
+    },
+    {
+      "type": "File",
+      "feature": "filesystem_type",
+      "value": "NTFS",
+      "detail": "filesystem_type: NTFS"
+    }
+  ],
+  "timeline": [
+    {
+      "timestamp": "2001-01-01T00:00:00+00:00",
+      "event": "Earliest file activity detected"
+    },
+    {
+      "timestamp": "2026-06-22T19:28:46+00:00",
+      "event": "Latest file activity detected"
+    },
+    {
+      "timestamp": "Duration",
+      "event": "Activity spans 9,303 days (803,849,326 seconds)"
+    },
+    {
+      "timestamp": "Burst Pattern",
+      "event": "99 file creation bursts detected (possible staging or deployment)"
+    },
+    {
+      "timestamp": "Burst Pattern",
+      "event": "356 file modification bursts detected"
+    },
+    {
+      "timestamp": "Peak Activity",
+      "event": "Peak activity at hour 23:00, day: Sun"
+    },
+    {
+      "timestamp": "2026-06-29T18:50:04.862026+00:00",
+      "event": "AI prediction engine executed"
+    },
+    {
+      "timestamp": "2026-06-30T11:49:49.723141+00:00",
+      "event": "MITRE ATT&CK mapping and report generation completed"
+    }
+  ],
+  "recommendations": [
+    {
+      "priority": 1,
+      "technique_id": "T1204",
+      "technique_name": "User Execution",
+      "tactic": "Execution",
+      "actions": {
+        "containment": [
+          "Quarantine identified malicious executables",
+          "Block execution of suspicious scripts",
+          "Isolate host from network",
+          "Disable compromised accounts"
+        ],
+        "evidence_preservation": [
+          "Acquire copies of malicious files before quarantine",
+          "Preserve command-line audit logs",
+          "Acquire forensic images of affected media",
+          "Preserve volatile evidence (memory, network state)"
+        ],
+        "collection_steps": [
+          "Collect process execution history from Sysmon/ETW",
+          "Analyze command-line arguments of suspicious processes"
+        ],
+        "further_investigation": [
+          "Submit executables to sandbox for dynamic analysis",
+          "Correlate execution times with other lateral movement",
+          "Correlate findings with SIEM logs",
+          "Check for additional indicators of compromise (IOCs)"
+        ]
+      }
+    },
+    {
+      "priority": 2,
+      "technique_id": "T1036.007",
+      "technique_name": "Masquerading: Double File Extension",
+      "tactic": "Defense Evasion",
+      "actions": {
+        "containment": [
+          "Re-enable tampered security controls",
+          "Restore modified audit configurations",
+          "Isolate host from network",
+          "Disable compromised accounts"
+        ],
+        "evidence_preservation": [
+          "Preserve unaltered copies of tampered logs",
+          "Capture hidden artifacts before remediation",
+          "Acquire forensic images of affected media",
+          "Preserve volatile evidence (memory, network state)"
+        ],
+        "collection_steps": [
+          "Check for log clearing events (Event ID 1102/104)",
+          "Inspect hidden files, ADS, and packed binaries"
+        ],
+        "further_investigation": [
+          "Analyze timestomped files for true creation dates",
+          "Check for process hollowing or DLL side-loading",
+          "Correlate findings with SIEM logs",
+          "Check for additional indicators of compromise (IOCs)"
+        ]
+      }
+    },
+    {
+      "priority": 3,
+      "technique_id": "T1547",
+      "technique_name": "Boot or Logon Autostart Execution",
+      "tactic": "Persistence",
+      "actions": {
+        "containment": [
+          "Disable identified persistence mechanisms",
+          "Remove suspicious startup entries and scheduled tasks",
+          "Isolate host from network",
+          "Disable compromised accounts"
+        ],
+        "evidence_preservation": [
+          "Export registry hives for offline analysis",
+          "Snapshot current startup configuration",
+          "Acquire forensic images of affected media",
+          "Preserve volatile evidence (memory, network state)"
+        ],
+        "collection_steps": [
+          "Collect autoruns output from affected host",
+          "Enumerate scheduled tasks and services"
+        ],
+        "further_investigation": [
+          "Inspect registry run keys and startup folders",
+          "Check for backdoor implants in service binaries",
+          "Correlate findings with SIEM logs",
+          "Check for additional indicators of compromise (IOCs)"
+        ]
+      }
+    },
+    {
+      "priority": 4,
+      "technique_id": "T1547.001",
+      "technique_name": "Boot or Logon Autostart Execution: Registry Run Keys / Startup Folder",
+      "tactic": "Persistence",
+      "actions": {
+        "containment": [
+          "Disable identified persistence mechanisms",
+          "Remove suspicious startup entries and scheduled tasks",
+          "Isolate host from network",
+          "Disable compromised accounts"
+        ],
+        "evidence_preservation": [
+          "Export registry hives for offline analysis",
+          "Snapshot current startup configuration",
+          "Acquire forensic images of affected media",
+          "Preserve volatile evidence (memory, network state)"
+        ],
+        "collection_steps": [
+          "Collect autoruns output from affected host",
+          "Enumerate scheduled tasks and services"
+        ],
+        "further_investigation": [
+          "Inspect registry run keys and startup folders",
+          "Check for backdoor implants in service binaries",
+          "Correlate findings with SIEM logs",
+          "Check for additional indicators of compromise (IOCs)"
+        ]
+      }
+    },
+    {
+      "priority": 5,
+      "technique_id": "T1486",
+      "technique_name": "Data Encrypted for Impact",
+      "tactic": "Impact",
+      "actions": {
+        "containment": [
+          "Disconnect affected systems from production network",
+          "Halt identified destructive processes",
+          "Isolate host from network",
+          "Disable compromised accounts"
+        ],
+        "evidence_preservation": [
+          "Acquire forensic images of affected drives",
+          "Preserve any ransom notes or attacker communications",
+          "Acquire forensic images of affected media",
+          "Preserve volatile evidence (memory, network state)"
+        ],
+        "collection_steps": [
+          "Assess extent of data destruction or encryption",
+          "Verify backup integrity for affected systems"
+        ],
+        "further_investigation": [
+          "Determine if data exfiltration preceded destruction",
+          "Analyze malware for decryption possibilities",
+          "Correlate findings with SIEM logs",
+          "Check for additional indicators of compromise (IOCs)"
+        ]
+      }
+    },
+    {
+      "priority": 6,
+      "technique_id": "T1565",
+      "technique_name": "Data Manipulation",
+      "tactic": "Impact",
+      "actions": {
+        "containment": [
+          "Disconnect affected systems from production network",
+          "Halt identified destructive processes",
+          "Isolate host from network",
+          "Disable compromised accounts"
+        ],
+        "evidence_preservation": [
+          "Acquire forensic images of affected drives",
+          "Preserve any ransom notes or attacker communications",
+          "Acquire forensic images of affected media",
+          "Preserve volatile evidence (memory, network state)"
+        ],
+        "collection_steps": [
+          "Assess extent of data destruction or encryption",
+          "Verify backup integrity for affected systems"
+        ],
+        "further_investigation": [
+          "Determine if data exfiltration preceded destruction",
+          "Analyze malware for decryption possibilities",
+          "Correlate findings with SIEM logs",
+          "Check for additional indicators of compromise (IOCs)"
+        ]
+      }
+    },
+    {
+      "priority": 7,
+      "technique_id": "T1059",
+      "technique_name": "Command and Scripting Interpreter",
+      "tactic": "Execution",
+      "actions": {
+        "containment": [
+          "Quarantine identified malicious executables",
+          "Block execution of suspicious scripts",
+          "Isolate host from network",
+          "Disable compromised accounts"
+        ],
+        "evidence_preservation": [
+          "Acquire copies of malicious files before quarantine",
+          "Preserve command-line audit logs",
+          "Acquire forensic images of affected media",
+          "Preserve volatile evidence (memory, network state)"
+        ],
+        "collection_steps": [
+          "Collect process execution history from Sysmon/ETW",
+          "Analyze command-line arguments of suspicious processes"
+        ],
+        "further_investigation": [
+          "Submit executables to sandbox for dynamic analysis",
+          "Correlate execution times with other lateral movement",
+          "Correlate findings with SIEM logs",
+          "Check for additional indicators of compromise (IOCs)"
+        ]
+      }
+    },
+    {
+      "priority": 8,
+      "technique_id": "T1204",
+      "technique_name": "User Execution",
+      "tactic": "Execution",
+      "actions": {
+        "containment": [
+          "Quarantine identified malicious executables",
+          "Block execution of suspicious scripts",
+          "Isolate host from network",
+          "Disable compromised accounts"
+        ],
+        "evidence_preservation": [
+          "Acquire copies of malicious files before quarantine",
+          "Preserve command-line audit logs",
+          "Acquire forensic images of affected media",
+          "Preserve volatile evidence (memory, network state)"
+        ],
+        "collection_steps": [
+          "Collect process execution history from Sysmon/ETW",
+          "Analyze command-line arguments of suspicious processes"
+        ],
+        "further_investigation": [
+          "Submit executables to sandbox for dynamic analysis",
+          "Correlate execution times with other lateral movement",
+          "Correlate findings with SIEM logs",
+          "Check for additional indicators of compromise (IOCs)"
+        ]
+      }
+    },
+    {
+      "priority": 9,
+      "technique_id": "T1204.002",
+      "technique_name": "User Execution: Malicious File",
+      "tactic": "Execution",
+      "actions": {
+        "containment": [
+          "Quarantine identified malicious executables",
+          "Block execution of suspicious scripts",
+          "Isolate host from network",
+          "Disable compromised accounts"
+        ],
+        "evidence_preservation": [
+          "Acquire copies of malicious files before quarantine",
+          "Preserve command-line audit logs",
+          "Acquire forensic images of affected media",
+          "Preserve volatile evidence (memory, network state)"
+        ],
+        "collection_steps": [
+          "Collect process execution history from Sysmon/ETW",
+          "Analyze command-line arguments of suspicious processes"
+        ],
+        "further_investigation": [
+          "Submit executables to sandbox for dynamic analysis",
+          "Correlate execution times with other lateral movement",
+          "Correlate findings with SIEM logs",
+          "Check for additional indicators of compromise (IOCs)"
+        ]
+      }
+    },
+    {
+      "priority": 10,
+      "technique_id": "T1204",
+      "technique_name": "User Execution",
+      "tactic": "Execution",
+      "actions": {
+        "containment": [
+          "Quarantine identified malicious executables",
+          "Block execution of suspicious scripts",
+          "Isolate host from network",
+          "Disable compromised accounts"
+        ],
+        "evidence_preservation": [
+          "Acquire copies of malicious files before quarantine",
+          "Preserve command-line audit logs",
+          "Acquire forensic images of affected media",
+          "Preserve volatile evidence (memory, network state)"
+        ],
+        "collection_steps": [
+          "Collect process execution history from Sysmon/ETW",
+          "Analyze command-line arguments of suspicious processes"
+        ],
+        "further_investigation": [
+          "Submit executables to sandbox for dynamic analysis",
+          "Correlate execution times with other lateral movement",
+          "Correlate findings with SIEM logs",
+          "Check for additional indicators of compromise (IOCs)"
+        ]
+      }
+    },
+    {
+      "priority": 11,
+      "technique_id": "T1053",
+      "technique_name": "Scheduled Task/Job",
+      "tactic": "Execution",
+      "actions": {
+        "containment": [
+          "Quarantine identified malicious executables",
+          "Block execution of suspicious scripts",
+          "Isolate host from network",
+          "Disable compromised accounts"
+        ],
+        "evidence_preservation": [
+          "Acquire copies of malicious files before quarantine",
+          "Preserve command-line audit logs",
+          "Acquire forensic images of affected media",
+          "Preserve volatile evidence (memory, network state)"
+        ],
+        "collection_steps": [
+          "Collect process execution history from Sysmon/ETW",
+          "Analyze command-line arguments of suspicious processes"
+        ],
+        "further_investigation": [
+          "Submit executables to sandbox for dynamic analysis",
+          "Correlate execution times with other lateral movement",
+          "Correlate findings with SIEM logs",
+          "Check for additional indicators of compromise (IOCs)"
+        ]
+      }
+    }
+  ],
+  "conclusion": "Based on the automated analysis of disk forensic evidence, this case exhibits **anomalous activity** consistent with potential malicious behavior. The AI model detected significant deviations from baseline patterns, and 11 MITRE ATT&CK techniques were identified in the evidence.\nThe risk assessment is **CRITICAL**. Immediate containment actions are recommended. All volatile evidence should be preserved before any remediation steps are taken. A manual review by a qualified forensic analyst is strongly advised to confirm these automated findings.",
+  "generation_timestamp": "2026-06-30T11:49:49.723141+00:00"
+}

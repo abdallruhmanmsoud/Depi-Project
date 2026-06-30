@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.pyc
+
+# Logs
+*.log
+
+# Large generated data
+database/raw/
+database/normalized/
+disk/raw/
+disk/normalized/
+
+# Generated datasets
+database/dataset/*.csv
+disk/dataset/*.csv
+
+# Generated reports
+database/prediction/
+database/evaluation/
+disk/prediction/
+disk/evaluation/

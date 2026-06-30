@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "DLL Schema",
+  "description": "Schema for normalized Volatility dlllist output. Each object represents a single DLL loaded by a process.",
+  "type": "object",
+  "properties": {
+    "pid": {
+      "type": "integer",
+      "description": "Process ID that loaded this DLL"
+    },
+    "process": {
+      "type": "string",
+      "description": "Process name"
+    },
+    "base": {
+      "type": "string",
+      "description": "Base address of the DLL in memory"
+    },
+    "size": {
+      "type": "integer",
+      "description": "Size of the DLL in bytes"
+    },
+    "name": {
+      "type": "string",
+      "description": "DLL file name"
+    },
+    "path": {
+      "type": "string",
+      "description": "Full path to the DLL on disk"
+    },
+    "load_count": {
+      "type": ["integer", "null"],
+      "description": "Number of times the DLL has been loaded. Often unavailable in Volatility 3."
+    },
+    "load_time": {
+      "type": ["string", "null"],
+      "description": "DLL load timestamp (ISO 8601). Often unavailable in Volatility 3."
+    },
+    "file_output": {
+      "type": "string",
+      "description": "File output information from Volatility"
+    }
+  },
+  "required": ["pid", "process", "name"]
+}

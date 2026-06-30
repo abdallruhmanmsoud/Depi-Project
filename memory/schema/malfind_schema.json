@@ -1,0 +1,49 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Malfind Schema",
+  "description": "Schema for normalized Volatility malfind output. Each object represents a suspicious memory region found in a process.",
+  "type": "object",
+  "properties": {
+    "pid": {
+      "type": "integer",
+      "description": "Process ID"
+    },
+    "process": {
+      "type": "string",
+      "description": "Process name"
+    },
+    "start_vpn": {
+      "type": "string",
+      "description": "Start of the virtual page number (hex address)"
+    },
+    "end_vpn": {
+      "type": "string",
+      "description": "End of the virtual page number (hex address)"
+    },
+    "tag": {
+      "type": "string",
+      "description": "Pool tag for the VAD entry"
+    },
+    "protection": {
+      "type": "string",
+      "description": "Memory protection type (e.g., PAGE_EXECUTE_READWRITE)"
+    },
+    "commit_charge": {
+      "type": "integer",
+      "description": "Number of committed pages"
+    },
+    "private_memory": {
+      "type": "boolean",
+      "description": "Whether the region is private memory (not backed by a file)"
+    },
+    "file_output": {
+      "type": "string",
+      "description": "File output information from Volatility"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional notes or disassembly hints"
+    }
+  },
+  "required": ["pid", "process", "protection"]
+}
