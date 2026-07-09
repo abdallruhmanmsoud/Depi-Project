@@ -1,32 +1,3 @@
-{
-    "timestamp": "2026-06-22T16:47:58.391830",
-    "source_labels": "datasets/labels.csv",
-    "dataset_path": "datasets/memory_dataset.csv",
-    "total_cases": 4,
-    "safe_cases": 3,
-    "suspicious_cases": 1,
-    "unlabeled_cases": 0,
-    "metadata_columns": 5,
-    "feature_columns": 164,
-    "total_columns": 169,
-    "expected_feature_count": 164,
-    "actual_feature_count": 164,
-    "feature_count_match": true,
-    "schema_consistency": "PASS",
-    "schema_issues": [],
-    "missing_values": "none",
-    "warnings": [],
-    "label_source": "analyst",
-    "case_labels": {
-        "DESKTOP-88S7USO-20260616-144313_forensics_20260616_120619": "suspicious",
-        "MemoryDump_forensics_20260616_083039": "safe",
-        "Win11Dump_runner_20260622_080128": "safe",
-        "Windows 10 x64-043303df_runner_20260622_070714": "safe"
-    },
-    "readiness": {
-        "isolation_forest_ready": true,
-        "safe_cases": 3,
-        "suspicious_cases": 1,
-        "recommendation": "Ready for training"
-    }
-}
+version https://git-lfs.github.com/spec/v1
+oid sha256:dfdf3a902947e161a3becfe0acbd9e92152a5fbdaab4b80caa9f95e5b7041481
+size 1046
