@@ -1,0 +1,494 @@
+/* ================================================================
+   Forensics Dashboard — Premium Dark DFIR Theme
+   ================================================================ */
+
+/* ── Google Fonts ────────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap');
+
+/* ── Root Variables ──────────────────────────────────────────── */
+:root {
+  --bg-deep:       #060910;
+  --bg-primary:    #0a0e17;
+  --bg-surface:    rgba(15, 23, 42, 0.65);
+  --bg-card:       rgba(30, 41, 59, 0.45);
+  --bg-card-hover: rgba(30, 41, 59, 0.7);
+  --border-subtle: rgba(99, 102, 241, 0.08);
+  --border-hover:  rgba(99, 102, 241, 0.35);
+  --text-primary:  #f1f5f9;
+  --text-secondary:#94a3b8;
+  --text-muted:    #64748b;
+  --accent:        #6366f1;
+  --accent-light:  #818cf8;
+  --green:         #10b981;
+  --red:           #ef4444;
+  --warning:       #f59e0b;
+}
+
+/* ── Global Reset & Base ─────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-deep);
+  color: var(--text-primary);
+  /* Subtle radial glow behind content */
+  background-image:
+    radial-gradient(ellipse 80% 50% at 25% 40%, rgba(99, 102, 241, 0.045) 0%, transparent 70%),
+    radial-gradient(ellipse 60% 50% at 75% 60%, rgba(139, 92, 246, 0.035) 0%, transparent 70%);
+  background-attachment: fixed;
+}
+
+main { flex: 1; }
+
+/* ── Animated Cyber Grid Background ──────────────────────────── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image:
+    linear-gradient(rgba(99, 102, 241, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(99, 102, 241, 0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.3), transparent);
+  animation: scanLine 8s linear infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+@keyframes scanLine {
+  0%   { top: 0; left: -100%; }
+  50%  { left: 100%; }
+  50.01% { top: 100%; left: -100%; }
+  100% { left: 100%; }
+}
+
+main, .navbar, footer { position: relative; z-index: 1; }
+
+/* ── Navbar ──────────────────────────────────────────────────── */
+.navbar {
+  background: rgba(10, 14, 23, 0.88) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-color: var(--border-subtle) !important;
+  padding-top: .6rem;
+  padding-bottom: .6rem;
+}
+.navbar-brand {
+  font-family: 'Inter', sans-serif !important;
+  font-weight: 800 !important;
+  font-size: 1.15rem !important;
+  letter-spacing: 0.5px;
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #06b6d4 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.navbar-brand .bi {
+  -webkit-text-fill-color: #6366f1;
+}
+.navbar .nav-link {
+  color: var(--text-muted) !important;
+  font-weight: 500;
+  font-size: 0.9rem;
+  transition: color 0.2s;
+}
+.navbar .nav-link:hover {
+  color: var(--text-primary) !important;
+}
+
+/* ── Cards (Bootstrap override) ──────────────────────────────── */
+.card {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border-subtle) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* ── Tool cards (original class — used in category & tool pages) ── */
+.tool-card {
+  transition: transform 0.25s cubic-bezier(.4,0,.2,1),
+              box-shadow 0.25s ease,
+              border-color 0.25s ease;
+  background: var(--bg-card) !important;
+  border-color: var(--border-subtle) !important;
+  backdrop-filter: blur(12px);
+}
+.tool-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35),
+              0 0 0 1px rgba(99, 102, 241, 0.2) !important;
+  border-color: var(--border-hover) !important;
+}
+
+/* ── Log output area ─────────────────────────────────────────── */
+.log-output {
+  background: var(--bg-deep);
+  color: #c9d1d9;
+  font-family: 'Fira Code', 'Cascadia Code', 'JetBrains Mono', monospace;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  padding: 1rem;
+  max-height: 520px;
+  min-height: 300px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  border: none;
+  border-radius: 0;
+}
+
+/* ── Badge tweaks ────────────────────────────────────────────── */
+.badge { font-weight: 500; }
+
+/* ── Breadcrumb ──────────────────────────────────────────────── */
+.breadcrumb {
+  background: transparent;
+  padding: 0;
+  font-size: 0.9rem;
+}
+.breadcrumb-item a {
+  color: var(--accent-light);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+.breadcrumb-item a:hover {
+  color: var(--text-primary);
+}
+.breadcrumb-item.active {
+  color: var(--text-muted);
+}
+
+/* ── Footer ──────────────────────────────────────────────────── */
+footer {
+  font-size: 0.85rem;
+  border-color: var(--border-subtle) !important;
+  color: var(--text-muted);
+}
+
+/* ── Flash / Alert override ──────────────────────────────────── */
+.alert {
+  border: 1px solid var(--border-subtle);
+  backdrop-filter: blur(8px);
+}
+
+/* ── Buttons ─────────────────────────────────────────────────── */
+.btn-primary {
+  background: var(--accent) !important;
+  border-color: var(--accent) !important;
+  font-weight: 600;
+}
+.btn-primary:hover {
+  background: var(--accent-light) !important;
+  border-color: var(--accent-light) !important;
+}
+
+/* ================================================================
+   CATEGORY DASHBOARD STYLES (index.html)
+   ================================================================ */
+
+/* ── Hero Section ────────────────────────────────────────────── */
+.hero-section {
+  text-align: center;
+  padding: 3.5rem 1rem 2.5rem;
+}
+.hero-icon {
+  font-size: 3.2rem;
+  display: block;
+  margin-bottom: 1rem;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 24px rgba(99, 102, 241, 0.25));
+}
+.hero-title {
+  font-size: 2.2rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 40%, #06b6d4 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 0.5rem;
+}
+.hero-subtitle {
+  color: var(--text-secondary);
+  font-size: 1.05rem;
+  font-weight: 400;
+}
+
+/* ── Category Cards ──────────────────────────────────────────── */
+.category-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 18px;
+  padding: 2.25rem 1.5rem 2rem;
+  text-align: center;
+  text-decoration: none !important;
+  color: inherit;
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  transition: transform 0.3s cubic-bezier(.4,0,.2,1),
+              border-color 0.3s ease,
+              box-shadow 0.35s ease;
+  cursor: pointer;
+  min-height: 240px;
+}
+/* Top accent bar */
+.category-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--card-accent, var(--accent));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+/* Radial glow on hover */
+.category-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 18px;
+  background: radial-gradient(circle at 50% 40%, var(--card-accent, var(--accent)), transparent 70%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+.category-card:hover {
+  transform: translateY(-8px);
+  border-color: var(--card-accent, var(--accent));
+  box-shadow:
+    0 16px 48px rgba(0, 0, 0, 0.35),
+    0 0 0 1px var(--card-accent, var(--accent)),
+    0 0 60px -10px color-mix(in srgb, var(--card-accent, var(--accent)) 30%, transparent);
+}
+.category-card:hover::before { opacity: 1; }
+.category-card:hover::after  { opacity: 0.06; }
+
+.category-card .cat-icon {
+  font-size: 3rem;
+  display: block;
+  margin-bottom: 1rem;
+  color: var(--card-accent, var(--accent));
+  transition: transform 0.3s ease, filter 0.3s ease;
+  filter: drop-shadow(0 0 0 transparent);
+}
+.category-card:hover .cat-icon {
+  transform: scale(1.18);
+  filter: drop-shadow(0 0 14px color-mix(in srgb, var(--card-accent, var(--accent)) 50%, transparent));
+}
+
+.category-card .cat-name {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.25rem;
+  letter-spacing: 0.3px;
+}
+.category-card .cat-subtitle {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin-bottom: 1.15rem;
+}
+.category-card .cat-count {
+  display: inline-block;
+  padding: 4px 14px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: color-mix(in srgb, var(--card-accent, var(--accent)) 12%, transparent);
+  color: var(--card-accent, var(--accent));
+  border: 1px solid color-mix(in srgb, var(--card-accent, var(--accent)) 22%, transparent);
+  transition: background 0.2s;
+}
+.category-card:hover .cat-count {
+  background: color-mix(in srgb, var(--card-accent, var(--accent)) 20%, transparent);
+}
+
+/* ── Pipeline indicator ──────────────────────────────────────── */
+.pipeline-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 0.85rem;
+  opacity: 0.7;
+}
+.pipeline-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 6px var(--green);
+}
+
+/* ================================================================
+   UTILITIES SECTION (index.html)
+   ================================================================ */
+.utilities-section {
+  margin-top: 3.5rem;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+.utilities-title {
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  margin-bottom: 1.25rem;
+}
+.utility-card {
+  display: block;
+  background: rgba(15, 23, 42, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 12px;
+  padding: 1.25rem 1.4rem;
+  text-decoration: none !important;
+  color: inherit;
+  transition: transform 0.25s ease,
+              border-color 0.25s ease,
+              box-shadow 0.25s ease;
+}
+.utility-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(99, 102, 241, 0.25);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+.utility-card h6 {
+  color: var(--text-primary);
+  font-weight: 600;
+  margin-bottom: 0.3rem;
+}
+.utility-card p {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  margin-bottom: 0;
+  line-height: 1.4;
+}
+
+/* ================================================================
+   CATEGORY TOOLS PAGE (category.html)
+   ================================================================ */
+.category-header {
+  text-align: center;
+  padding: 2.5rem 1rem 1.5rem;
+}
+.category-header .cat-icon-lg {
+  font-size: 3.8rem;
+  display: block;
+  margin-bottom: 0.75rem;
+  transition: filter 0.3s;
+}
+.category-header h2 {
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 0.25rem;
+}
+.category-header .category-subtitle {
+  color: var(--text-secondary);
+  font-size: 1rem;
+}
+
+.cat-tool-card {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border-subtle) !important;
+  border-radius: 14px;
+  transition: transform 0.3s cubic-bezier(.4,0,.2,1),
+              border-color 0.3s ease,
+              box-shadow 0.35s ease;
+  overflow: hidden;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.cat-tool-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.3),
+              0 0 0 1px var(--cat-color, var(--accent));
+  border-color: var(--cat-color, var(--accent)) !important;
+}
+.cat-tool-card .card-title {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.cat-tool-card .card-title .bi {
+  color: var(--cat-color, var(--accent));
+}
+.cat-tool-card .card-text {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+.btn-open-tool {
+  border: none;
+  color: #fff !important;
+  padding: 0.5rem 1.25rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: opacity 0.2s, transform 0.2s;
+}
+.btn-open-tool:hover {
+  opacity: 0.85;
+  transform: translateY(-1px);
+}
+
+/* ================================================================
+   ENTRANCE ANIMATIONS
+   ================================================================ */
+.fade-in-up {
+  opacity: 0;
+  transform: translateY(24px);
+  animation: fadeInUp 0.55s ease forwards;
+}
+@keyframes fadeInUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ================================================================
+   CUSTOM SCROLLBAR
+   ================================================================ */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-deep);
+}
+::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}
+
+/* ── Selection highlight ─────────────────────────────────────── */
+::selection {
+  background: rgba(99, 102, 241, 0.35);
+  color: #fff;
+}

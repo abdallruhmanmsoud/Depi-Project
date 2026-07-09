@@ -1,0 +1,25 @@
+{
+  "feature_names": [
+    "Destination Port",
+    "Flow Duration",
+    "Total Fwd Packets",
+    "Total Backward Packets",
+    "Total Length of Fwd Packets",
+    "Total Length of Bwd Packets",
+    "Flow Bytes/s",
+    "Flow Packets/s",
+    "Fwd Packets/s",
+    "Bwd Packets/s",
+    "SYN Flag Count",
+    "RST Flag Count",
+    "PSH Flag Count",
+    "ACK Flag Count",
+    "Down/Up Ratio"
+  ],
+  "contamination": 0.05,
+  "n_estimators": 200,
+  "train_ratio": 0.85,
+  "trained_on": "Monday-WorkingHours.pcap_ISCX.csv",
+  "training_rows": 450058,
+  "validation_rows": 79423
+}

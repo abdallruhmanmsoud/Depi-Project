@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Forensics Report — {{case_id}}</title>
+    <style>
+        :root {
+            --bg-primary: #0a0e17;
+            --bg-secondary: #111827;
+            --bg-card: #1a2234;
+            --bg-card-alt: #1e293b;
+            --text-primary: #e2e8f0;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --accent-red: #ef4444;
+            --accent-orange: #f97316;
+            --accent-yellow: #eab308;
+            --accent-green: #22c55e;
+            --accent-blue: #3b82f6;
+            --accent-purple: #8b5cf6;
+            --accent-cyan: #06b6d4;
+            --border-color: #1e293b;
+            --border-highlight: #334155;
+            --critical-bg: rgba(239, 68, 68, 0.1);
+            --critical-border: rgba(239, 68, 68, 0.3);
+            --high-bg: rgba(249, 115, 22, 0.1);
+            --high-border: rgba(249, 115, 22, 0.3);
+            --medium-bg: rgba(234, 179, 8, 0.1);
+            --medium-border: rgba(234, 179, 8, 0.3);
+            --low-bg: rgba(34, 197, 94, 0.1);
+            --low-border: rgba(34, 197, 94, 0.3);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+            padding: 0;
+        }
+
+        .report-container { max-width: 1100px; margin: 0 auto; padding: 40px 32px; }
+
+        .report-header {
+            text-align: center;
+            padding: 48px 32px;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+            border: 1px solid var(--border-highlight);
+            border-radius: 16px;
+            margin-bottom: 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .report-header::before {
+            content: '';
+            position: absolute; top: 0; left: 0; right: 0; height: 3px;
+            background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple), var(--accent-cyan));
+        }
+
+        .report-header h1 {
+            font-size: 28px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+            margin-bottom: 8px;
+        }
+
+        .report-header .subtitle { font-size: 14px; color: var(--text-muted); letter-spacing: 1px; }
+        .report-header .case-id { font-size: 16px; color: var(--accent-cyan); margin-top: 12px; font-family: 'Consolas', 'Courier New', monospace; }
+
+        .section { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; margin-bottom: 24px; overflow: hidden; }
+        .section-header { display: flex; align-items: center; gap: 12px; padding: 20px 24px; background: var(--bg-card-alt); border-bottom: 1px solid var(--border-color); }
+        .section-number {
+            width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            border-radius: 8px; font-size: 14px; font-weight: 700; color: white; flex-shrink: 0;
+        }
+        .section-title { font-size: 18px; font-weight: 600; color: var(--text-primary); }
+        .section-body { padding: 24px; }
+
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        thead th {
+            background: var(--bg-card-alt); padding: 12px 16px; text-align: left; font-weight: 600;
+            color: var(--text-secondary); text-transform: uppercase; font-size: 11px; letter-spacing: 1px;
+            border-bottom: 2px solid var(--border-highlight);
+        }
+        tbody td { padding: 12px 16px; border-bottom: 1px solid var(--border-color); color: var(--text-primary); vertical-align: top; }
+        tbody tr:hover { background: rgba(59, 130, 246, 0.04); }
+        tbody tr:last-child td { border-bottom: none; }
+        .key-value-table td:first-child { font-weight: 600; color: var(--text-secondary); width: 200px; white-space: nowrap; }
+
+        .badge { display: inline-block; padding: 4px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+        .badge-critical { background: var(--critical-bg); color: var(--accent-red); border: 1px solid var(--critical-border); }
+        .badge-high { background: var(--high-bg); color: var(--accent-orange); border: 1px solid var(--high-border); }
+        .badge-medium { background: var(--medium-bg); color: var(--accent-yellow); border: 1px solid var(--medium-border); }
+        .badge-low { background: var(--low-bg); color: var(--accent-green); border: 1px solid var(--low-border); }
+        .badge-safe { background: var(--low-bg); color: var(--accent-green); border: 1px solid var(--low-border); }
+        .badge-malicious { background: var(--critical-bg); color: var(--accent-red); border: 1px solid var(--critical-border); }
+
+        .metric-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
+        .metric-card { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 10px; padding: 20px; text-align: center; }
+        .metric-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 8px; }
+        .metric-value { font-size: 28px; font-weight: 700; }
+        .metric-value.critical { color: var(--accent-red); }
+        .metric-value.high { color: var(--accent-orange); }
+        .metric-value.medium { color: var(--accent-yellow); }
+        .metric-value.low { color: var(--accent-green); }
+        .metric-value.safe { color: var(--accent-green); }
+
+        .evidence-item { padding: 16px 20px; background: var(--bg-secondary); border-left: 3px solid var(--accent-blue); border-radius: 0 8px 8px 0; margin-bottom: 12px; }
+        .evidence-item.critical { border-left-color: var(--accent-red); }
+        .evidence-item.high { border-left-color: var(--accent-orange); }
+        .evidence-item.medium { border-left-color: var(--accent-yellow); }
+        .evidence-rank { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 4px; }
+        .evidence-text { color: var(--text-primary); font-size: 14px; }
+        .evidence-detail { color: var(--text-secondary); font-size: 13px; margin-top: 4px; }
+
+        .technique-card { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 10px; padding: 20px; margin-bottom: 16px; }
+        .technique-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+        .technique-id { font-family: 'Consolas', monospace; font-size: 14px; color: var(--accent-cyan); font-weight: 600; }
+        .technique-name { font-size: 16px; font-weight: 600; color: var(--text-primary); margin-bottom: 4px; }
+        .technique-tactic { font-size: 12px; color: var(--text-muted); }
+        .confidence-bar { height: 6px; background: var(--bg-card); border-radius: 3px; margin-top: 12px; overflow: hidden; }
+        .confidence-fill { height: 100%; border-radius: 3px; transition: width 0.5s ease; }
+
+        .ioc-item { display: flex; align-items: center; gap: 12px; padding: 10px 16px; background: var(--bg-secondary); border-radius: 8px; margin-bottom: 8px; font-family: 'Consolas', monospace; font-size: 13px; }
+        .ioc-type { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--accent-purple); font-weight: 600; min-width: 80px; font-family: 'Segoe UI', sans-serif; }
+        .ioc-value { color: var(--text-primary); word-break: break-all; }
+
+        .rec-category { margin-bottom: 20px; }
+        .rec-category-title { font-size: 14px; font-weight: 600; color: var(--accent-cyan); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+        .rec-item { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; color: var(--text-primary); font-size: 14px; }
+        .rec-bullet { color: var(--accent-blue); font-weight: 700; flex-shrink: 0; margin-top: 2px; }
+
+        .timeline-entry { display: flex; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--border-color); }
+        .timeline-entry:last-child { border-bottom: none; }
+        .timeline-time { font-family: 'Consolas', monospace; font-size: 12px; color: var(--text-muted); min-width: 160px; flex-shrink: 0; }
+        .timeline-desc { color: var(--text-primary); font-size: 14px; }
+
+        .summary-text { color: var(--text-secondary); font-size: 15px; line-height: 1.8; }
+        .summary-text strong { color: var(--text-primary); }
+
+        .conclusion { padding: 24px; background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(139, 92, 246, 0.05)); border: 1px solid var(--border-highlight); border-radius: 10px; }
+        .conclusion p { color: var(--text-secondary); font-size: 15px; line-height: 1.8; }
+
+        .report-footer { text-align: center; padding: 32px; color: var(--text-muted); font-size: 12px; border-top: 1px solid var(--border-color); margin-top: 40px; }
+
+        @media print {
+            body { background: white; color: #1a1a1a; }
+            .report-container { padding: 20px; }
+            .report-header { background: #f8fafc; border-color: #e2e8f0; }
+            .report-header h1 { -webkit-text-fill-color: #1e40af; }
+            .section { border-color: #e2e8f0; }
+            .section-header { background: #f8fafc; }
+            .metric-card { background: #f8fafc; border-color: #e2e8f0; }
+            .evidence-item { background: #f8fafc; }
+            .technique-card { background: #f8fafc; border-color: #e2e8f0; }
+            .ioc-item { background: #f8fafc; }
+            thead th { background: #f1f5f9; color: #475569; }
+            tbody td { color: #1a1a1a; }
+            .summary-text { color: #475569; }
+            .conclusion { background: #f8fafc; }
+        }
+    </style>
+</head>
+<body>
+    <div class="report-container">
+        <div class="report-header">
+            <h1>Digital Forensics Report</h1>
+            <div class="subtitle">MITRE ATT&CK Threat Intelligence Analysis</div>
+            <div class="case-id">{{case_id}}</div>
+        </div>
+
+        <div class="section">
+            <div class="section-header"><div class="section-number">1</div><div class="section-title">Case Information</div></div>
+            <div class="section-body">
+                <table class="key-value-table"><tbody>
+                    <tr><td>Case ID</td><td>{{case_id}}</td></tr>
+                    <tr><td>Category</td><td>{{category}}</td></tr>
+                    <tr><td>Tool</td><td>{{tool}}</td></tr>
+                    <tr><td>Analysis Date</td><td>{{analysis_date}}</td></tr>
+                    <tr><td>Processing Time</td><td>{{processing_time}}</td></tr>
+                </tbody></table>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-header"><div class="section-number">2</div><div class="section-title">Executive Summary</div></div>
+            <div class="section-body"><div class="summary-text">{{executive_summary}}</div></div>
+        </div>
+
+        <div class="section">
+            <div class="section-header"><div class="section-number">3</div><div class="section-title">AI Assessment</div></div>
+            <div class="section-body"><div class="metric-grid">{{ai_assessment_metrics}}</div></div>
+        </div>
+
+        <div class="section">
+            <div class="section-header"><div class="section-number">4</div><div class="section-title">Evidence Summary</div></div>
+            <div class="section-body">{{evidence_summary}}</div>
+        </div>
+
+        <div class="section">
+            <div class="section-header"><div class="section-number">5</div><div class="section-title">Feature Highlights</div></div>
+            <div class="section-body">
+                <table>
+                    <thead><tr><th>Rank</th><th>Feature</th><th>Value</th><th>Significance</th></tr></thead>
+                    <tbody>{{feature_highlights_rows}}</tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-header"><div class="section-number">6</div><div class="section-title">MITRE ATT&CK Mapping</div></div>
+            <div class="section-body">{{mitre_technique_cards}}</div>
+        </div>
+
+        <div class="section">
+            <div class="section-header"><div class="section-number">7</div><div class="section-title">Indicators of Compromise</div></div>
+            <div class="section-body">{{ioc_items}}</div>
+        </div>
+
+        <div class="section">
+            <div class="section-header"><div class="section-number">8</div><div class="section-title">Timeline Summary</div></div>
+            <div class="section-body">{{timeline_entries}}</div>
+        </div>
+
+        <div class="section">
+            <div class="section-header"><div class="section-number">9</div><div class="section-title">Recommendations</div></div>
+            <div class="section-body">{{recommendations_html}}</div>
+        </div>
+
+        <div class="section">
+            <div class="section-header"><div class="section-number">10</div><div class="section-title">Conclusion</div></div>
+            <div class="section-body"><div class="conclusion">{{conclusion}}</div></div>
+        </div>
+
+        <div class="report-footer">
+            <p>Report generated automatically by the Digital Forensics AI Platform — MITRE ATT&CK Mapping Engine v1.0</p>
+            <p>Generated on: {{generation_timestamp}}</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Browser Forensics Report — {{case_id}}</title>
+    <style>
+        :root {
+            --bg-primary: #0a0e17; --bg-secondary: #111827; --bg-card: #1a2234; --bg-card-alt: #1e293b;
+            --text-primary: #e2e8f0; --text-secondary: #94a3b8; --text-muted: #64748b;
+            --accent-red: #ef4444; --accent-orange: #f97316; --accent-yellow: #eab308;
+            --accent-green: #22c55e; --accent-blue: #3b82f6; --accent-purple: #8b5cf6; --accent-cyan: #06b6d4;
+            --border-color: #1e293b; --border-highlight: #334155;
+            --critical-bg: rgba(239, 68, 68, 0.1); --critical-border: rgba(239, 68, 68, 0.3);
+            --high-bg: rgba(249, 115, 22, 0.1); --high-border: rgba(249, 115, 22, 0.3);
+            --medium-bg: rgba(234, 179, 8, 0.1); --medium-border: rgba(234, 179, 8, 0.3);
+            --low-bg: rgba(34, 197, 94, 0.1); --low-border: rgba(34, 197, 94, 0.3);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif; background: var(--bg-primary); color: var(--text-primary); line-height: 1.7; }
+        .report-container { max-width: 1200px; margin: 0 auto; padding: 40px 32px; }
+        .report-header {
+            text-align: center; padding: 48px 32px;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+            border: 1px solid var(--border-highlight); border-radius: 16px; margin-bottom: 40px; position: relative; overflow: hidden;
+        }
+        .report-header::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple), var(--accent-cyan)); }
+        .report-header h1 { font-size: 28px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 8px; }
+        .report-header .subtitle { font-size: 14px; color: var(--text-muted); letter-spacing: 1px; }
+        .report-header .case-id { font-size: 16px; color: var(--accent-cyan); margin-top: 12px; font-family: 'Consolas', monospace; }
+        .section { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; margin-bottom: 24px; overflow: hidden; }
+        .section-header { display: flex; align-items: center; gap: 12px; padding: 20px 24px; background: var(--bg-card-alt); border-bottom: 1px solid var(--border-color); }
+        .section-number { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple)); border-radius: 8px; font-size: 14px; font-weight: 700; color: white; flex-shrink: 0; }
+        .section-title { font-size: 18px; font-weight: 600; color: var(--text-primary); }
+        .section-body { padding: 24px; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        thead th { background: var(--bg-card-alt); padding: 10px 14px; text-align: left; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; font-size: 10px; letter-spacing: 1px; border-bottom: 2px solid var(--border-highlight); }
+        tbody td { padding: 10px 14px; border-bottom: 1px solid var(--border-color); color: var(--text-primary); vertical-align: top; word-break: break-all; }
+        tbody tr:hover { background: rgba(59, 130, 246, 0.04); }
+        tbody tr:last-child td { border-bottom: none; }
+        .key-value-table td:first-child { font-weight: 600; color: var(--text-secondary); width: 200px; white-space: nowrap; }
+        .badge { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; }
+        .badge-critical, .badge-high { background: var(--high-bg); color: var(--accent-orange); border: 1px solid var(--high-border); }
+        .badge-medium { background: var(--medium-bg); color: var(--accent-yellow); border: 1px solid var(--medium-border); }
+        .badge-low, .badge-safe { background: var(--low-bg); color: var(--accent-green); border: 1px solid var(--low-border); }
+        .badge-phishing { background: var(--critical-bg); color: var(--accent-red); border: 1px solid var(--critical-border); }
+        .badge-benign { background: var(--low-bg); color: var(--accent-green); border: 1px solid var(--low-border); }
+        .metric-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; }
+        .metric-card { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 10px; padding: 20px; text-align: center; }
+        .metric-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 8px; }
+        .metric-value { font-size: 26px; font-weight: 700; }
+        .metric-value.critical, .metric-value.high { color: var(--accent-orange); }
+        .metric-value.medium { color: var(--accent-yellow); }
+        .metric-value.low, .metric-value.safe { color: var(--accent-green); }
+        .flag-icon { font-size: 13px; }
+        .summary-text { color: var(--text-secondary); font-size: 15px; line-height: 1.8; }
+        .summary-text strong { color: var(--text-primary); }
+        .conclusion { padding: 24px; background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(139, 92, 246, 0.05)); border: 1px solid var(--border-highlight); border-radius: 10px; }
+        .conclusion p { color: var(--text-secondary); font-size: 15px; line-height: 1.8; }
+        .report-footer { text-align: center; padding: 32px; color: var(--text-muted); font-size: 12px; border-top: 1px solid var(--border-color); margin-top: 40px; }
+        .placeholder-note { color: var(--text-muted); font-size: 13px; font-style: italic; }
+    </style>
+</head>
+<body>
+    <div class="report-container">
+        <div class="report-header">
+            <h1>Browser Forensics Report</h1>
+            <div class="subtitle">Phishing URL Detection Analysis</div>
+            <div class="case-id">{{case_id}}</div>
+        </div>
+
+        <div class="section">
+            <div class="section-header"><div class="section-number">1</div><div class="section-title">Case Information</div></div>
+            <div class="section-body">
+                <table class="key-value-table"><tbody>
+                    <tr><td>Case ID</td><td>{{case_id}}</td></tr>
+                    <tr><td>Source File</td><td>{{source_file}}</td></tr>
+                    <tr><td>Analysis Date</td><td>{{analysis_date}}</td></tr>
+                </tbody></table>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-header"><div class="section-number">2</div><div class="section-title">Executive Summary</div></div>
+            <div class="section-body"><div class="summary-text">{{executive_summary}}</div></div>
+        </div>
+
+        <div class="section">
+            <div class="section-header"><div class="section-number">3</div><div class="section-title">AI Assessment</div></div>
+            <div class="section-body"><div class="metric-grid">{{ai_assessment_metrics}}</div></div>
+        </div>
+
+        <div class="section">
+            <div class="section-header"><div class="section-number">4</div><div class="section-title">High-Risk URLs</div></div>
+            <div class="section-body">{{high_risk_urls_table}}</div>
+        </div>
+
+        <div class="section">
+            <div class="section-header"><div class="section-number">5</div><div class="section-title">Full URL Analysis</div></div>
+            <div class="section-body">
+                <table>
+                    <thead><tr><th>URL</th><th>Prediction</th><th>Confidence</th><th>Risk</th><th>Layer</th><th>Login</th><th>Download</th><th>Visits</th></tr></thead>
+                    <tbody>{{url_table_rows}}</tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-header"><div class="section-number">6</div><div class="section-title">MITRE ATT&CK Mapping</div></div>
+            <div class="section-body">{{mitre_technique_cards}}</div>
+        </div>
+
+        <div class="section">
+            <div class="section-header"><div class="section-number">7</div><div class="section-title">Indicators of Compromise</div></div>
+            <div class="section-body">{{ioc_items}}</div>
+        </div>
+
+        <div class="section">
+            <div class="section-header"><div class="section-number">8</div><div class="section-title">Recommendations</div></div>
+            <div class="section-body">{{recommendations_html}}</div>
+        </div>
+
+        <div class="section">
+            <div class="section-header"><div class="section-number">9</div><div class="section-title">Conclusion</div></div>
+            <div class="section-body"><div class="conclusion">{{conclusion}}</div></div>
+        </div>
+
+        <div class="report-footer">
+            <p>Report generated automatically by the Digital Forensics AI Platform — Browser Phishing Detection Engine v1.0</p>
+            <p>Generated on: {{generation_timestamp}}</p>
+        </div>
+    </div>
+</body>
+</html>

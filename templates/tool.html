@@ -1,0 +1,291 @@
+{% extends "base.html" %}
+{% block title %}{{ tool_name }} — Forensics Dashboard{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Dashboard</a></li>
+    {% if category_id %}
+    <li class="breadcrumb-item"><a href="{{ url_for('category_page', category_id=category_id) }}">{{ category.name }}</a></li>
+    {% endif %}
+    <li class="breadcrumb-item active">{{ tool_name }}</li>
+  </ol>
+</nav>
+
+<div class="row">
+  <!-- Left column — upload & config -->
+  <div class="col-lg-5 mb-4">
+    <div class="card shadow-sm">
+      <div class="card-header fw-bold">
+        <i class="bi bi-upload me-1"></i>Upload &amp; Run
+      </div>
+      <div class="card-body">
+        <p class="text-secondary">{{ tool_description }}</p>
+
+        <!-- Prerequisites -->
+        <div class="mb-3">
+          <strong>Prerequisites</strong>
+          <ul class="list-unstyled mt-1">
+            {% for p in prerequisites %}
+            <li>
+              {% if p.installed %}
+                <i class="bi bi-check-circle-fill text-success"></i>
+              {% else %}
+                <i class="bi bi-x-circle-fill text-danger"></i>
+              {% endif %}
+              <code>{{ p.program }}</code>
+            </li>
+            {% endfor %}
+          </ul>
+          {% if not all_ok %}
+          <div class="alert alert-warning py-2">
+            <i class="bi bi-exclamation-triangle me-1"></i>
+            Some prerequisites are missing. Install them before running this tool.
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- Accepted extensions -->
+        <div class="mb-3">
+          <strong>Accepted file types:</strong>
+          {% if accepted_extensions %}
+            {% for ext in accepted_extensions %}
+              <span class="badge bg-secondary">{{ ext }}</span>
+            {% endfor %}
+          {% else %}
+            <span class="badge bg-info">Any file type</span>
+          {% endif %}
+        </div>
+
+        <!-- Mode tabs -->
+        <ul class="nav nav-tabs mb-3" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="tab-upload" data-bs-toggle="tab" data-bs-target="#pane-upload" type="button" role="tab">
+              <i class="bi bi-cloud-arrow-up me-1"></i>Upload File
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="tab-local" data-bs-toggle="tab" data-bs-target="#pane-local" type="button" role="tab">
+              <i class="bi bi-folder2-open me-1"></i>Local Path
+              <span class="badge bg-info ms-1">large files</span>
+            </button>
+          </li>
+        </ul>
+
+        <div class="tab-content">
+          <!-- Upload tab -->
+          <div class="tab-pane fade show active" id="pane-upload" role="tabpanel">
+            <form id="uploadForm" enctype="multipart/form-data">
+              <div class="mb-3">
+                <label for="fileInput" class="form-label">Select file to analyse</label>
+                <input class="form-control" type="file" id="fileInput" name="file" required />
+              </div>
+              <button type="submit" class="btn btn-primary w-100" id="btnUpload">
+                <i class="bi bi-cloud-arrow-up me-1"></i>Upload
+              </button>
+            </form>
+          </div>
+
+          <!-- Local path tab -->
+          <div class="tab-pane fade" id="pane-local" role="tabpanel">
+            <form id="localForm">
+              <div class="mb-3">
+                <label for="localPath" class="form-label">Absolute path to file on this machine</label>
+                <input class="form-control" type="text" id="localPath" name="filepath"
+                       placeholder="/path/to/memdump.mem" required />
+                <div class="form-text">Use this for large files (e.g. memory dumps) to skip uploading.</div>
+              </div>
+              <button type="submit" class="btn btn-primary w-100" id="btnLocal">
+                <i class="bi bi-folder2-open me-1"></i>Use Local File
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <div id="uploadStatus" class="mt-3" style="display:none;"></div>
+
+        <!-- Run button (shown after upload or local path) -->
+        <button class="btn btn-success w-100 mt-3" id="btnRun" style="display:none;">
+          <i class="bi bi-play-fill me-1"></i>Run Analysis
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right column — live logs -->
+  <div class="col-lg-7 mb-4">
+    <div class="card shadow-sm">
+      <div class="card-header d-flex justify-content-between align-items-center fw-bold">
+        <span><i class="bi bi-terminal me-1"></i>Live Output</span>
+        <div class="d-flex align-items-center gap-2">
+          <div class="btn-group btn-group-sm" role="group" aria-label="Output format toggle">
+            <button type="button" class="btn btn-outline-primary active" id="btnViewText">Raw Text</button>
+            <button type="button" class="btn btn-outline-primary" id="btnViewJson">JSON Result</button>
+          </div>
+          <span class="badge bg-secondary" id="statusBadge">Idle</span>
+        </div>
+      </div>
+      <div class="card-body p-0">
+        <div id="textContainer">
+          <pre id="logOutput" class="log-output mb-0"></pre>
+        </div>
+        <div id="jsonContainer" style="display: none;">
+          <pre id="jsonOutput" class="log-output mb-0 text-success" style="max-height: 400px; overflow-y: auto; padding: 1rem; margin: 0; background-color: #1e1e1e; color: #a9ffaf;"></pre>
+        </div>
+      </div>
+      <div class="card-footer d-flex gap-2">
+        <button class="btn btn-outline-secondary btn-sm" id="btnSave" disabled>
+          <i class="bi bi-download me-1"></i>Save Report (Text)
+        </button>
+        <button class="btn btn-outline-success btn-sm" id="btnDownloadJson" disabled>
+          <i class="bi bi-filetype-json me-1"></i>Download JSON
+        </button>
+        <button class="btn btn-outline-secondary btn-sm" id="btnClear">
+          <i class="bi bi-trash me-1"></i>Clear
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+<script>
+  const TOOL_ID = "{{ tool_id }}";
+  let sessionId = null;
+
+  const socket = io();
+  const logEl  = document.getElementById("logOutput");
+  const badge  = document.getElementById("statusBadge");
+  const btnRun = document.getElementById("btnRun");
+  const btnSave= document.getElementById("btnSave");
+
+  function appendLog(line) {
+    logEl.textContent += line + "\n";
+    logEl.scrollTop = logEl.scrollHeight;
+  }
+
+  function showStatus(className, text) {
+    const statusEl = document.getElementById("uploadStatus");
+    statusEl.style.display = "block";
+    statusEl.className = "mt-3 alert " + className;
+    statusEl.textContent = text;
+  }
+
+  function onSessionReady(data) {
+    sessionId = data.session_id;
+    showStatus("alert-success", data.message);
+    btnRun.style.display = "block";
+    appendLog(`File ready — session ${sessionId}`);
+  }
+
+  // Upload form
+  document.getElementById("uploadForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const form = new FormData(e.target);
+    showStatus("alert-info", "Uploading ...");
+
+    try {
+      const resp = await fetch(`/upload/${TOOL_ID}`, { method: "POST", body: form });
+      const data = await resp.json();
+      if (!resp.ok) { showStatus("alert-danger", data.error || "Upload failed."); return; }
+      onSessionReady(data);
+    } catch (err) {
+      showStatus("alert-danger", "Upload error: " + err);
+    }
+  });
+
+  // Local path form
+  document.getElementById("localForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const filepath = document.getElementById("localPath").value.trim();
+    if (!filepath) return;
+    showStatus("alert-info", "Validating local file ...");
+
+    try {
+      const resp = await fetch(`/local/${TOOL_ID}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ filepath }),
+      });
+      const data = await resp.json();
+      if (!resp.ok) { showStatus("alert-danger", data.error || "Failed."); return; }
+      onSessionReady(data);
+    } catch (err) {
+      showStatus("alert-danger", "Error: " + err);
+    }
+  });
+
+  const btnDownloadJson = document.getElementById("btnDownloadJson");
+  const btnViewText = document.getElementById("btnViewText");
+  const btnViewJson = document.getElementById("btnViewJson");
+  const textContainer = document.getElementById("textContainer");
+  const jsonContainer = document.getElementById("jsonContainer");
+  const jsonEl = document.getElementById("jsonOutput");
+
+  // Toggle format views
+  btnViewText.addEventListener("click", () => {
+    btnViewText.classList.add("active");
+    btnViewJson.classList.remove("active");
+    textContainer.style.display = "block";
+    jsonContainer.style.display = "none";
+  });
+
+  btnViewJson.addEventListener("click", () => {
+    btnViewJson.classList.add("active");
+    btnViewText.classList.remove("active");
+    textContainer.style.display = "none";
+    jsonContainer.style.display = "block";
+  });
+
+  // Run analysis
+  btnRun.addEventListener("click", () => {
+    if (!sessionId) return;
+    btnRun.disabled = true;
+    badge.textContent = "Running";
+    badge.className   = "badge bg-warning";
+    appendLog("");
+    jsonEl.textContent = "";
+    btnSave.disabled = true;
+    btnDownloadJson.disabled = true;
+    socket.emit("run_analysis", { session_id: sessionId });
+  });
+
+  // Live log lines
+  socket.on("log", (data) => {
+    appendLog(data.line);
+    if (data.done) {
+      badge.textContent = "Complete";
+      badge.className   = "badge bg-success";
+      btnRun.disabled   = false;
+      btnSave.disabled  = false;
+      btnDownloadJson.disabled = false;
+      
+      if (data.results) {
+        jsonEl.textContent = JSON.stringify(data.results, null, 2);
+      } else {
+        jsonEl.textContent = JSON.stringify({ error: "No structured JSON results returned." }, null, 2);
+      }
+    }
+  });
+
+  // Save report (Text)
+  btnSave.addEventListener("click", () => {
+    if (!sessionId) return;
+    window.location.href = `/report/${sessionId}`;
+  });
+
+  // Download JSON
+  btnDownloadJson.addEventListener("click", () => {
+    if (!sessionId) return;
+    window.location.href = `/report/json/${sessionId}`;
+  });
+
+  // Clear logs
+  document.getElementById("btnClear").addEventListener("click", () => {
+    logEl.textContent = "";
+    jsonEl.textContent = "";
+  });
+</script>
+{% endblock %}

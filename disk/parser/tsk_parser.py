@@ -253,11 +253,17 @@ _FLS_TYPE = {
     "l/-": (False, "deleted"),
 }
 
-# Regex for fls line:  [DEPTH]TYPE  INODE-ATTR-ID: NAME
+# Regex for fls line:  [DEPTH]TYPE  [*] INODE-ATTR-ID: NAME
+# The optional `*` (asterisk) is a TSK reallocation/deletion marker
+# that appears before the inode in deleted or reallocated entries:
+#   r/r 4-128-1:\t$AttrDef          (normal)
+#   r/- * 0:\tSomeFile.txt           (deleted, no real inode)
+#   -/r * 81-128-1:\tFile.png        (deleted/reallocated with inode)
 _FLS_RE = re.compile(
     r"^(\+*)"                          # group 1: depth indicators
     r"\s*([a-zA-Z\-]+/[a-zA-Z\-]+)"   # group 2: type flag (e.g. r/r)
     r"\s+"
+    r"(?:\*\s+)?"                      # optional reallocation marker *
     r"(\d+(?:-\d+)*)"                  # group 3: inode[-attr[-id]]
     r"(?:\s*\([^)]*\))?"               # optional (realloc)
     r":\s+"

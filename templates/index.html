@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Digital Forensics AI Platform{% endblock %}
+
+{% block content %}
+<!-- ─── Hero Section ──────────────────────────────────────── -->
+<div class="hero-section fade-in-up">
+  <span class="hero-icon"><i class="bi bi-shield-lock-fill"></i></span>
+  <h1 class="hero-title">Digital Forensics AI Platform</h1>
+  <p class="hero-subtitle">Select a forensic category to begin your investigation</p>
+</div>
+
+<!-- ─── Category Grid ─────────────────────────────────────── -->
+{% if not categories %}
+<div class="alert alert-info">
+  No forensic categories configured. Drop tool modules into the
+  <code>tools/</code> directory and restart the dashboard.
+</div>
+{% endif %}
+
+<div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4 mb-4 justify-content-center">
+  {% for cat in categories %}
+  <div class="col fade-in-up" style="animation-delay: {{ loop.index0 * 0.08 }}s;">
+    <a href="{{ url_for('category_page', category_id=cat.category_id) }}"
+       class="category-card h-100"
+       style="--card-accent: {{ cat.color }};">
+      <span class="cat-icon"><i class="bi {{ cat.icon }}"></i></span>
+      <div class="cat-name">{{ cat.name }}</div>
+      <div class="cat-subtitle">{{ cat.subtitle }}</div>
+      <span class="cat-count">{{ cat.tool_count }} tool{{ 's' if cat.tool_count != 1 else '' }}</span>
+      <div class="pipeline-label">
+        <span class="pipeline-dot"></span>
+        Pipeline Active
+      </div>
+    </a>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- ─── Utilities Section ─────────────────────────────────── -->
+{% if utilities %}
+<div class="utilities-section fade-in-up" style="animation-delay: 0.6s;">
+  <h4 class="utilities-title"><i class="bi bi-wrench-adjustable me-2"></i>Utilities</h4>
+  <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3">
+    {% for tool in utilities %}
+    <div class="col">
+      <a href="{{ url_for('tool_page', tool_id=tool.tool_id) }}" class="utility-card">
+        <h6><i class="bi bi-gear me-1"></i>{{ tool.name }}</h6>
+        <p>{{ tool.description }}</p>
+      </a>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}

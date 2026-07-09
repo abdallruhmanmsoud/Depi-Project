@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}{{ category.name }} — Digital Forensics AI{% endblock %}
+
+{% block content %}
+<!-- ─── Breadcrumb ────────────────────────────────────────── -->
+<nav aria-label="breadcrumb" class="mb-3 fade-in-up">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Dashboard</a></li>
+    <li class="breadcrumb-item active">{{ category.name }}</li>
+  </ol>
+</nav>
+
+<!-- ─── Category Header ──────────────────────────────────── -->
+<div class="category-header fade-in-up" style="animation-delay: 0.05s;">
+  <span class="cat-icon-lg" style="color: {{ category.color }};">
+    <i class="bi {{ category.icon }}"></i>
+  </span>
+  <h2>{{ category.name }}</h2>
+  <p class="category-subtitle">
+    {{ category.subtitle }} &mdash; {{ tools|length }} tool{{ 's' if tools|length != 1 else '' }} available
+  </p>
+</div>
+
+{% if not tools %}
+<div class="alert alert-info">
+  No tools discovered for this category. Ensure the required tool modules
+  are present in the <code>tools/</code> directory and restart the dashboard.
+</div>
+{% endif %}
+
+<!-- ─── Tools Grid ────────────────────────────────────────── -->
+<div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4" style="--cat-color: {{ category.color }};">
+  {% for tool in tools %}
+  <div class="col fade-in-up" style="animation-delay: {{ loop.index0 * 0.08 }}s;">
+    <div class="card cat-tool-card h-100">
+      <div class="card-body d-flex flex-column">
+        <h5 class="card-title mb-2">
+          <i class="bi bi-tools me-1"></i>{{ tool.name }}
+        </h5>
+        <p class="card-text flex-grow-1">{{ tool.description }}</p>
+
+        <!-- Prerequisites -->
+        <div class="mb-3">
+          <small class="text-uppercase fw-bold text-secondary">Prerequisites</small>
+          <ul class="list-unstyled mb-0 mt-1">
+            {% for p in tool.prerequisites %}
+            <li>
+              {% if p.installed %}
+                <i class="bi bi-check-circle-fill text-success"></i>
+              {% else %}
+                <i class="bi bi-x-circle-fill text-danger"></i>
+              {% endif %}
+              <code>{{ p.program }}</code>
+            </li>
+            {% endfor %}
+            {% if not tool.prerequisites %}
+            <li class="text-secondary"><em>No external prerequisites</em></li>
+            {% endif %}
+          </ul>
+        </div>
+
+        <!-- Accepted extensions -->
+        {% if tool.accepted_extensions %}
+        <div class="mb-3">
+          <small class="text-uppercase fw-bold text-secondary">Accepted files</small><br>
+          {% for ext in tool.accepted_extensions %}
+            <span class="badge bg-secondary">{{ ext }}</span>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="mb-3">
+          <small class="text-uppercase fw-bold text-secondary">Accepted files</small><br>
+          <span class="badge bg-info">Any file type</span>
+        </div>
+        {% endif %}
+
+        <a href="{{ url_for('tool_page', tool_id=tool.tool_id) }}"
+           class="btn btn-open-tool mt-auto"
+           style="background: {{ category.color }};">
+          <i class="bi bi-play-circle me-1"></i>Open Tool
+        </a>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

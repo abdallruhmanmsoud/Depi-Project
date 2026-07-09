@@ -1,0 +1,304 @@
+{% extends "base.html" %}
+{% block title %}Session {{ session_id }} — Forensics Dashboard{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Dashboard</a></li>
+    <li class="breadcrumb-item active">Session {{ session_id }}</li>
+  </ol>
+</nav>
+
+<!-- ───── Tool Header ───── -->
+<div class="card shadow-sm mb-4">
+  <div class="card-header d-flex justify-content-between align-items-center fw-bold">
+    <span>
+      <i class="bi bi-terminal me-1"></i>{{ tool_name }} &mdash;
+      <code>{{ sess.filename }}</code>
+    </span>
+    <div class="d-flex align-items-center gap-2">
+      <div class="btn-group btn-group-sm" role="group" aria-label="Output format toggle">
+        <button type="button" class="btn btn-outline-primary active" id="btnViewText">Raw Text</button>
+        <button type="button" class="btn btn-outline-primary" id="btnViewJson">JSON Result</button>
+      </div>
+      <span id="statusBadge" class="badge {% if sess.status == 'complete' %}bg-success{% elif sess.status == 'running' %}bg-warning{% elif sess.status == 'error' %}bg-danger{% else %}bg-secondary{% endif %}">
+        {{ sess.status }}
+      </span>
+    </div>
+  </div>
+  <div class="card-body p-0">
+    <div id="textContainer">
+      <pre id="logOutput" class="log-output mb-0">{% for line in sess.logs %}{{ line }}
+{% endfor %}</pre>
+    </div>
+    <div id="jsonContainer" style="display: none;">
+      <pre id="jsonOutput" class="log-output mb-0 text-success" style="max-height: 400px; overflow-y: auto; padding: 1rem; margin: 0; background-color: #1e1e1e; color: #a9ffaf;">{% if sess.results %}{{ sess.results | tojson(indent=2) }}{% endif %}</pre>
+    </div>
+  </div>
+  <div class="card-footer d-flex gap-2 flex-wrap">
+    {% if sess.status in ('ready', 'complete', 'error') %}
+    <button class="btn btn-success btn-sm" id="btnRun">
+      <i class="bi bi-play-fill me-1"></i>{% if sess.status == 'ready' %}Run Analysis{% else %}Re&#8209;Run{% endif %}
+    </button>
+    {% endif %}
+    {% if sess.report_path %}
+    <a href="{{ url_for('download_report', session_id=session_id) }}" class="btn btn-outline-secondary btn-sm">
+      <i class="bi bi-download me-1"></i>Download Report
+    </a>
+    {% endif %}
+    {% if sess.report_path_json %}
+    <a href="{{ url_for('download_json_report', session_id=session_id) }}" class="btn btn-outline-success btn-sm">
+      <i class="bi bi-filetype-json me-1"></i>Download JSON
+    </a>
+    {% endif %}
+  </div>
+</div>
+
+<!-- ───── AI Analysis Panel (hidden until pipeline completes) ───── -->
+<div id="aiPanel" style="display:none;" class="mb-4">
+  <div class="card shadow-sm border-0" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color:#e2e8f0;">
+    <div class="card-header fw-bold" style="background:rgba(99,102,241,.15); border-bottom:1px solid rgba(99,102,241,.3);">
+      <i class="bi bi-robot me-2" style="color:#818cf8;"></i>AI Forensic Analysis Result
+    </div>
+    <div class="card-body">
+      <div class="row g-3 mb-3">
+        <!-- Prediction -->
+        <div class="col-6 col-md-3">
+          <div class="text-center p-3 rounded" style="background:rgba(255,255,255,.05);">
+            <div class="small text-muted mb-1">Prediction</div>
+            <div id="aiPrediction" class="fw-bold fs-5">—</div>
+          </div>
+        </div>
+        <!-- Risk Level -->
+        <div class="col-6 col-md-3">
+          <div class="text-center p-3 rounded" style="background:rgba(255,255,255,.05);">
+            <div class="small text-muted mb-1">Risk Level</div>
+            <div id="aiRisk" class="fw-bold fs-5">—</div>
+          </div>
+        </div>
+        <!-- Anomaly Score -->
+        <div class="col-6 col-md-3">
+          <div class="text-center p-3 rounded" style="background:rgba(255,255,255,.05);">
+            <div class="small text-muted mb-1">Anomaly Score</div>
+            <div id="aiScore" class="fw-bold fs-5">—</div>
+          </div>
+        </div>
+        <!-- Confidence -->
+        <div class="col-6 col-md-3">
+          <div class="text-center p-3 rounded" style="background:rgba(255,255,255,.05);">
+            <div class="small text-muted mb-1">Confidence</div>
+            <div id="aiConfidence" class="fw-bold fs-5">—</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MITRE Techniques -->
+      <h6 class="mt-3 mb-2" style="color:#94a3b8;">
+        <i class="bi bi-shield-exclamation me-1" style="color:#f59e0b;"></i>
+        MITRE ATT&amp;CK Techniques
+      </h6>
+      <div id="mitreTableWrapper">
+        <p class="text-muted small" id="mitreEmpty">No techniques matched.</p>
+        <div class="table-responsive" id="mitreTableContainer" style="display:none;">
+          <table class="table table-sm table-dark" id="mitreTable">
+            <thead>
+              <tr>
+                <th>Technique&nbsp;ID</th>
+                <th>Name</th>
+                <th>Tactic</th>
+                <th>Severity</th>
+                <th>Confidence</th>
+              </tr>
+            </thead>
+            <tbody id="mitreBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Recommendations (collapsed) -->
+      <h6 class="mt-3 mb-2" style="color:#94a3b8;">
+        <i class="bi bi-clipboard-check me-1" style="color:#34d399;"></i>
+        Recommendations
+      </h6>
+      <div id="recContainer">
+        <p class="text-muted small" id="recEmpty">No recommendations.</p>
+        <ol id="recList" class="small" style="display:none;"></ol>
+      </div>
+
+      <!-- Report Downloads -->
+      <div class="mt-3 d-flex gap-2 flex-wrap" id="aiReportLinks"></div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+<script>
+  const SESSION_ID = "{{ session_id }}";
+  const socket = io();
+  const logEl   = document.getElementById("logOutput");
+  const jsonEl  = document.getElementById("jsonOutput");
+  const btnRun  = document.getElementById("btnRun");
+  const btnViewText = document.getElementById("btnViewText");
+  const btnViewJson = document.getElementById("btnViewJson");
+  const textContainer = document.getElementById("textContainer");
+  const jsonContainer = document.getElementById("jsonContainer");
+  const statusBadge   = document.getElementById("statusBadge");
+  const aiPanel       = document.getElementById("aiPanel");
+
+  // ── Toggle raw/json views ─────────────────────────────────────────────────
+  btnViewText.addEventListener("click", () => {
+    btnViewText.classList.add("active");
+    btnViewJson.classList.remove("active");
+    textContainer.style.display = "block";
+    jsonContainer.style.display = "none";
+  });
+  btnViewJson.addEventListener("click", () => {
+    btnViewJson.classList.add("active");
+    btnViewText.classList.remove("active");
+    textContainer.style.display = "none";
+    jsonContainer.style.display = "block";
+  });
+
+  function appendLog(line) {
+    logEl.textContent += line + "\n";
+    logEl.scrollTop = logEl.scrollHeight;
+  }
+
+  // ── Risk colour helper ────────────────────────────────────────────────────
+  function riskColor(level) {
+    const map = {
+      CRITICAL: "#ef4444", HIGH: "#f97316",
+      MEDIUM: "#f59e0b", LOW: "#22d3ee",
+      SAFE: "#34d399", unknown: "#94a3b8",
+    };
+    return map[(level || "").toUpperCase()] || "#94a3b8";
+  }
+
+  function predColor(pred) {
+    if (!pred) return "#94a3b8";
+    const p = pred.toUpperCase();
+    if (p === "MALICIOUS" || p === "ANOMALOUS" || p === "PHISHING") return "#ef4444";
+    if (p === "SAFE" || p === "NORMAL") return "#34d399";
+    return "#f59e0b";
+  }
+
+  // ── Populate AI panel ─────────────────────────────────────────────────────
+  function showAiPanel(ai) {
+    if (!ai || !ai.stage || ai.stage === "skipped") return;
+
+    aiPanel.style.display = "block";
+
+    const predEl   = document.getElementById("aiPrediction");
+    const riskEl   = document.getElementById("aiRisk");
+    const scoreEl  = document.getElementById("aiScore");
+    const confEl   = document.getElementById("aiConfidence");
+
+    predEl.textContent  = ai.prediction  || "—";
+    predEl.style.color  = predColor(ai.prediction);
+
+    riskEl.textContent  = ai.risk_level  || "—";
+    riskEl.style.color  = riskColor(ai.risk_level);
+
+    scoreEl.textContent = ai.anomaly_score != null
+      ? parseFloat(ai.anomaly_score).toFixed(4) : "—";
+
+    confEl.textContent  = ai.confidence != null
+      ? (parseFloat(ai.confidence) * 100).toFixed(1) + "%" : "—";
+
+    // MITRE
+    const techniques = ai.mitre_techniques || [];
+    if (techniques.length > 0) {
+      document.getElementById("mitreEmpty").style.display = "none";
+      document.getElementById("mitreTableContainer").style.display = "block";
+      const tbody = document.getElementById("mitreBody");
+      tbody.innerHTML = "";
+      techniques.forEach(t => {
+        const tid  = t.id || t.technique_id || t.rule_id || "";
+        const name = t.name || t.technique_name || "";
+        const tac  = t.tactic || "";
+        const sev  = t.severity || "";
+        const conf = t.confidence != null ? (parseFloat(t.confidence)*100).toFixed(0)+"%" : "";
+        const sevColor = { Critical:"#ef4444", High:"#f97316", Medium:"#f59e0b", Low:"#22d3ee" }[sev] || "#94a3b8";
+        tbody.insertAdjacentHTML("beforeend",
+          `<tr>
+            <td><code style="color:#818cf8">${tid}</code></td>
+            <td>${name}</td>
+            <td>${tac}</td>
+            <td><span style="color:${sevColor};font-weight:600">${sev}</span></td>
+            <td>${conf}</td>
+          </tr>`
+        );
+      });
+    }
+
+    // Recommendations
+    const recs = ai.recommendations || [];
+    const recList = document.getElementById("recList");
+    if (recs.length > 0) {
+      document.getElementById("recEmpty").style.display = "none";
+      recList.style.display = "block";
+      recList.innerHTML = "";
+      recs.forEach(r => {
+        const label = r.technique_name || r.tactic || "";
+        const actions = (r.actions && r.actions.containment) ? r.actions.containment : [];
+        const actText = actions.length > 0 ? ` — ${actions[0]}` : "";
+        recList.insertAdjacentHTML("beforeend",
+          `<li><strong>${label}</strong>${actText}</li>`);
+      });
+    }
+
+    // Report links
+    const linkContainer = document.getElementById("aiReportLinks");
+    linkContainer.innerHTML = `
+      <a href="/report/${SESSION_ID}" class="btn btn-sm btn-outline-light">
+        <i class="bi bi-download me-1"></i>Download Report
+      </a>
+      <a href="/report/json/${SESSION_ID}" class="btn btn-sm btn-outline-success">
+        <i class="bi bi-filetype-json me-1"></i>Download JSON
+      </a>`;
+  }
+
+  // ── Run button ────────────────────────────────────────────────────────────
+  if (btnRun) {
+    btnRun.addEventListener("click", () => {
+      btnRun.disabled = true;
+      appendLog("");
+      jsonEl.textContent = "";
+      aiPanel.style.display = "none";
+      socket.emit("run_analysis", { session_id: SESSION_ID });
+    });
+  }
+
+  // ── Socket events ─────────────────────────────────────────────────────────
+  socket.on("log", (data) => {
+    appendLog(data.line);
+    if (data.done) {
+      if (btnRun) btnRun.disabled = false;
+
+      // Update status badge
+      if (statusBadge) {
+        statusBadge.textContent = "complete";
+        statusBadge.className = "badge bg-success";
+      }
+
+      // Show AI panel if the pipeline returned results
+      if (data.ai_result) {
+        showAiPanel(data.ai_result);
+      }
+
+      // Reload after a short delay to refresh server-side report download links
+      setTimeout(() => { window.location.reload(); }, 1500);
+    }
+  });
+
+  // Restore AI panel from server data on page refresh (if ai_result was saved)
+  {% if sess.get('ai_result') %}
+  (function() {
+    const ai = {{ sess.ai_result | tojson }};
+    if (ai) showAiPanel(ai);
+  })();
+  {% endif %}
+</script>
+{% endblock %}

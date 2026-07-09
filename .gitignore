@@ -20,3 +20,7 @@ database/prediction/
 database/evaluation/
 disk/prediction/
 disk/evaluation/
+
+# Generated reports
+reports/
+New folder/
