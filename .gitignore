@@ -24,3 +24,11 @@ disk/evaluation/
 # Generated reports
 reports/
 New folder/
+
+database/raw/
+database/normalized/
+
+disk/raw/
+disk/normalized/
+
+*.log
